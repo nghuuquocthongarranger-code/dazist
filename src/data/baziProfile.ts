@@ -226,22 +226,24 @@ export const thanSatByPillar = [
   },
 ];
 
-export const thanSatMeanings = [
-  { name: "Thiên La", freq: "4/4 trụ", desc: "Sao hung bậc nhất — chủ về bó buộc, trắc trở, hay gặp cản trở/thị phi/kiện tụng; cộng hưởng trực tiếp với Tam Thìn Tự Hình, cũng gắn với ý nghĩa tu tâm/khắc kỷ nếu biết chuyển hóa.", good: false },
-  { name: "Thái Cực", freq: "3/4 trụ", desc: "Sao quý liên quan học thuật, triết lý, tôn giáo, Dịch lý — duyên với nghiên cứu chuyên sâu, minh triết.", good: true },
-  { name: "Quả Tú", freq: "3/4 trụ (Ngày và Giờ)", desc: "Sao chủ cô đơn — nhắc nhở cần chủ động vun đắp, tránh khép kín trong tình cảm và quan hệ con cái.", good: false },
-  { name: "Hồng Diễm", freq: "3/4 trụ", desc: "Sao đào hoa phụ, sức hút ngoại hình, dễ có duyên tình cảm — cần tiết chế để tránh thị phi khi kết hợp cùng Quả Tú.", good: true },
-  { name: "Hoa Cái", freq: "2/4 trụ", desc: "Duyên nghệ thuật, tâm linh, đời sống nội tâm sâu — cùng nhóm ý nghĩa với Thái Cực.", good: true },
-  { name: "Đức Quý Nhân", freq: "2/4 trụ", desc: "Sao lành — thường được người khác giúp đỡ, gặp dữ hóa lành.", good: true },
-  { name: "Tú Quý Nhân", freq: "2/4 trụ", desc: "Một loại quý nhân khác — sao lành, gặp dữ hóa lành.", good: true },
-  { name: "Học Đường", freq: "Năm", desc: "Thông minh, hiếu học.", good: true },
-  { name: "Lộc Thần", freq: "Năm", desc: "Ứng đúng cách Kiến Lộc — tài lộc ổn định.", good: true },
-  { name: "Quốc Ấn", freq: "Năm", desc: "Duyên quyền lực, địa vị \"chính danh\".", good: true },
-  { name: "Kiếp Sát", freq: "Năm", desc: "Đề phòng mất mát/hao tài/tai họa bất ngờ.", good: false },
-  { name: "Lưu Hà Sát", freq: "Năm", desc: "Cẩn trọng tai nạn liên quan nước, dao kéo, phẫu thuật.", good: false },
-  { name: "Phúc Tinh", freq: "Năm", desc: "Phúc đức, hóa giải hung sát.", good: true },
-  { name: "Khôi Canh", freq: "Tháng", desc: "Cương trực, quyết đoán, đôi khi cứng nhắc.", good: true },
-  { name: "Nguyệt Đức, Thiên Đức", freq: "Tháng", desc: "Hai sao lành bậc nhất, giảm nhẹ đáng kể ảnh hưởng tiêu cực từ Kiếp Sát, Lưu Hà Sát.", good: true },
+export type ThanSatNature = "tot" | "xau" | "trung-tinh";
+
+export const thanSatMeanings: { name: string; freq: string; desc: string; nature: ThanSatNature }[] = [
+  { name: "Thiên La", freq: "4/4 trụ", desc: "Sao hung bậc nhất — chủ về bó buộc, trắc trở, hay gặp cản trở/thị phi/kiện tụng; cộng hưởng trực tiếp với Tam Thìn Tự Hình, cũng gắn với ý nghĩa tu tâm/khắc kỷ nếu biết chuyển hóa.", nature: "xau" },
+  { name: "Thái Cực", freq: "3/4 trụ", desc: "Sao quý liên quan học thuật, triết lý, tôn giáo, Dịch lý — duyên với nghiên cứu chuyên sâu, minh triết.", nature: "tot" },
+  { name: "Quả Tú", freq: "3/4 trụ (Ngày và Giờ)", desc: "Sao chủ cô đơn — nhắc nhở cần chủ động vun đắp, tránh khép kín trong tình cảm và quan hệ con cái.", nature: "xau" },
+  { name: "Hồng Diễm", freq: "3/4 trụ", desc: "Sao đào hoa phụ, sức hút ngoại hình, dễ có duyên tình cảm — cần tiết chế để tránh thị phi khi kết hợp cùng Quả Tú.", nature: "trung-tinh" },
+  { name: "Hoa Cái", freq: "2/4 trụ", desc: "Duyên nghệ thuật, tâm linh, đời sống nội tâm sâu — cùng nhóm ý nghĩa với Thái Cực.", nature: "tot" },
+  { name: "Đức Quý Nhân", freq: "2/4 trụ", desc: "Sao lành — thường được người khác giúp đỡ, gặp dữ hóa lành.", nature: "tot" },
+  { name: "Tú Quý Nhân", freq: "2/4 trụ", desc: "Một loại quý nhân khác — sao lành, gặp dữ hóa lành.", nature: "tot" },
+  { name: "Học Đường", freq: "Năm", desc: "Thông minh, hiếu học.", nature: "tot" },
+  { name: "Lộc Thần", freq: "Năm", desc: "Ứng đúng cách Kiến Lộc — tài lộc ổn định.", nature: "tot" },
+  { name: "Quốc Ấn", freq: "Năm", desc: "Duyên quyền lực, địa vị \"chính danh\".", nature: "tot" },
+  { name: "Kiếp Sát", freq: "Năm", desc: "Đề phòng mất mát/hao tài/tai họa bất ngờ.", nature: "xau" },
+  { name: "Lưu Hà Sát", freq: "Năm", desc: "Cẩn trọng tai nạn liên quan nước, dao kéo, phẫu thuật.", nature: "xau" },
+  { name: "Phúc Tinh", freq: "Năm", desc: "Phúc đức, hóa giải hung sát.", nature: "tot" },
+  { name: "Khôi Canh", freq: "Tháng", desc: "Cương trực, quyết đoán, đôi khi cứng nhắc.", nature: "trung-tinh" },
+  { name: "Nguyệt Đức, Thiên Đức", freq: "Tháng", desc: "Hai sao lành bậc nhất, giảm nhẹ đáng kể ảnh hưởng tiêu cực từ Kiếp Sát, Lưu Hà Sát.", nature: "tot" },
 ];
 
 export const thanSatSummary =

@@ -1,4 +1,5 @@
 import { Nav } from "./components/Nav";
+import { CosmicBackground } from "./components/CosmicBackground";
 import { Hero } from "./components/sections/Hero";
 import { PersonalInfo } from "./components/sections/PersonalInfo";
 import { FourPillars } from "./components/sections/FourPillars";
@@ -14,6 +15,7 @@ import { Summary, Footer } from "./components/sections/Summary";
 function App() {
   return (
     <div id="top">
+      <CosmicBackground />
       <Nav />
       <main>
         <Hero />
