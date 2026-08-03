@@ -3,7 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Sphere, Ring, useTexture } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { ELEMENT_COLOR, type Element } from "../lib/elements";
+import type { Element } from "../lib/elements";
 import { elementRatios } from "../data/baziProfile";
 import mercuryImg from "../assets/textures/mercury.jpg";
 import venusImg from "../assets/textures/venus.jpg";
@@ -13,7 +13,8 @@ import saturnImg from "../assets/textures/saturn.jpg";
 import saturnRingImg from "../assets/textures/saturn_ring.png";
 import sunImg from "../assets/textures/sun.jpg";
 
-const ORBIT_ORDER: Element[] = ["moc", "hoa", "tho", "kim", "thuy"];
+// Thứ tự từ trong ra ngoài — Sao Thổ (vành đai) đặt xa nhất để không chen chúc các hành tinh khác
+const ORBIT_ORDER: Element[] = ["moc", "thuy", "kim", "hoa", "tho"];
 
 // Ảnh bề mặt thật (NASA / Solar System Scope, CC BY 4.0) ứng với ngũ tinh cổ truyền
 const TEXTURE_URL_BY_ELEMENT: Record<Element, string> = {
@@ -22,6 +23,23 @@ const TEXTURE_URL_BY_ELEMENT: Record<Element, string> = {
   tho: saturnImg,
   kim: venusImg,
   thuy: mercuryImg,
+};
+
+// Bán kính & tốc độ quỹ đạo riêng từng hành tinh — giãn cách tăng dần ra ngoài cho cân đối,
+// Sao Thổ đặt xa nhất vì có vành đai choán thêm không gian.
+const ORBIT_RADIUS: Record<Element, number> = {
+  moc: 2.1,
+  thuy: 3.0,
+  kim: 4.1,
+  hoa: 5.3,
+  tho: 7.3,
+};
+const ORBIT_SPEED: Record<Element, number> = {
+  moc: 0.2,
+  thuy: 0.17,
+  kim: 0.145,
+  hoa: 0.12,
+  tho: 0.085,
 };
 
 function usePrefersReducedMotion() {
@@ -62,7 +80,6 @@ function Planet({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
-  const color = ELEMENT_COLOR[element];
   const texture = useTexture(TEXTURE_URL_BY_ELEMENT[element]);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
@@ -83,17 +100,6 @@ function Planet({
         <mesh>
           <sphereGeometry args={[size, 64, 64]} />
           <meshStandardMaterial map={texture} roughness={0.9} metalness={0.02} />
-        </mesh>
-        {/* quầng khí đại diện Ngũ Hành — cố định, không phản ứng theo tương tác chuột */}
-        <mesh scale={1.12}>
-          <sphereGeometry args={[size, 32, 32]} />
-          <meshBasicMaterial
-            color={color}
-            transparent
-            opacity={0.14}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-          />
         </mesh>
         {element === "tho" && <SaturnRing size={size} />}
       </group>
@@ -179,11 +185,11 @@ function Scene({ reduced }: { reduced: boolean }) {
       <Nebula />
       <Stars radius={90} depth={50} count={4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.6} />
       <Sun />
-      {ORBIT_ORDER.map((el, i) => {
-        const radius = 2.2 + i * 1.05;
+      {ORBIT_ORDER.map((el) => {
+        const radius = ORBIT_RADIUS[el];
         const pct = ratioMap.get(el) ?? 10;
         const size = 0.24 + (pct / 40) * 0.5;
-        const speed = 0.16 - i * 0.02;
+        const speed = ORBIT_SPEED[el];
         return (
           <group key={el}>
             <OrbitRing radius={radius} />
@@ -213,7 +219,7 @@ export function Hero3D() {
   return (
     <div className="absolute inset-0" aria-hidden="true">
       <Suspense fallback={null}>
-        <Canvas camera={{ position: [0, 6, 17], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
+        <Canvas camera={{ position: [0, 7, 20], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
           <Scene reduced={reduced} />
         </Canvas>
       </Suspense>
