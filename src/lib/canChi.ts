@@ -106,23 +106,36 @@ export interface DayVerdict {
   canRole: DungHyKy;
   chiRole: DungHyKy;
   score: number;
+  percent: number;
   tier: "rat-tot" | "tot" | "binh-thuong" | "xau" | "rat-xau";
   tierLabel: string;
   summary: string;
   detail: string[];
 }
 
-function tierFromScore(score: number): { tier: DayVerdict["tier"]; label: string } {
-  if (score >= 2.5) return { tier: "rat-tot", label: "Rất tốt" };
-  if (score >= 1) return { tier: "tot", label: "Tốt" };
-  if (score > -1) return { tier: "binh-thuong", label: "Bình thường" };
-  if (score > -2.5) return { tier: "xau", label: "Xấu" };
+const CAN_WEIGHT = 1.2;
+const CHI_WEIGHT = 1.0;
+// Biên điểm lý thuyết: cả Can lẫn Chi đều là Dụng Thần (tốt nhất) hoặc đều là Kỵ Thần (xấu nhất)
+const MAX_SCORE = ROLE_SCORE["dung-than"] * CAN_WEIGHT + ROLE_SCORE["dung-than"] * CHI_WEIGHT;
+const MIN_SCORE = ROLE_SCORE["ky-than"] * CAN_WEIGHT + ROLE_SCORE["ky-than"] * CHI_WEIGHT;
+
+function scoreToPercent(score: number): number {
+  const pct = ((score - MIN_SCORE) / (MAX_SCORE - MIN_SCORE)) * 100;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
+function tierFromPercent(percent: number): { tier: DayVerdict["tier"]; label: string } {
+  if (percent >= 80) return { tier: "rat-tot", label: "Rất tốt" };
+  if (percent >= 60) return { tier: "tot", label: "Tốt" };
+  if (percent >= 40) return { tier: "binh-thuong", label: "Bình thường" };
+  if (percent >= 20) return { tier: "xau", label: "Xấu" };
   return { tier: "rat-xau", label: "Rất xấu" };
 }
 
 /**
  * Đánh giá ngày theo Dụng/Hỷ/Kỵ Thần của hồ sơ Mậu Thổ (Thân cực vượng, Dụng Thần Mộc, Hỷ Thần Thủy).
  * Trọng số Can 1.2 / Chi 1.0 vì Can lộ ra ngoài có ảnh hưởng trực tiếp hơn Chi tàng.
+ * Điểm quy đổi thang 0-100: 0 = cả Can/Chi đều Kỵ Thần, 100 = cả Can/Chi đều Dụng Thần.
  */
 export function evaluateDay(date: Date): DayVerdict {
   const pillar = getDayPillar(date);
@@ -130,11 +143,10 @@ export function evaluateDay(date: Date): DayVerdict {
   const canRole = ELEMENT_ROLE[pillar.can.element];
   const chiRole = ELEMENT_ROLE[pillar.chi.element];
 
-  const canWeight = 1.2;
-  const chiWeight = 1.0;
-  const score = ROLE_SCORE[canRole] * canWeight + ROLE_SCORE[chiRole] * chiWeight;
+  const score = ROLE_SCORE[canRole] * CAN_WEIGHT + ROLE_SCORE[chiRole] * CHI_WEIGHT;
+  const percent = scoreToPercent(score);
 
-  const { tier, label } = tierFromScore(score);
+  const { tier, label } = tierFromPercent(percent);
 
   const detail: string[] = [
     `Can ngày ${pillar.can.name} (${ROLE_LABEL[canRole]}, hành ${pillar.can.element === "moc" ? "Mộc" : pillar.can.element === "hoa" ? "Hỏa" : pillar.can.element === "tho" ? "Thổ" : pillar.can.element === "kim" ? "Kim" : "Thủy"}) — ứng Thập Thần ${tenGod}.`,
@@ -162,5 +174,5 @@ export function evaluateDay(date: Date): DayVerdict {
       break;
   }
 
-  return { pillar, tenGod, canRole, chiRole, score, tier, tierLabel: label, summary, detail };
+  return { pillar, tenGod, canRole, chiRole, score, percent, tier, tierLabel: label, summary, detail };
 }

@@ -12,13 +12,34 @@ function toISODate(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-const TIER_STYLE: Record<string, { bg: string; text: string; ring: string }> = {
-  "rat-tot": { bg: "from-gold-soft/25 to-gold/10", text: "text-gold-soft", ring: "shadow-[0_0_40px_-8px_#d4af37aa]" },
-  tot: { bg: "from-moc/20 to-moc/5", text: "text-moc", ring: "shadow-[0_0_40px_-10px_#3ddc8488]" },
-  "binh-thuong": { bg: "from-white/10 to-white/0", text: "text-white/80", ring: "" },
-  xau: { bg: "from-tho/20 to-tho/5", text: "text-tho", ring: "shadow-[0_0_40px_-10px_#e0a94a88]" },
-  "rat-xau": { bg: "from-hoa/25 to-hoa/5", text: "text-hoa", ring: "shadow-[0_0_40px_-8px_#ff5f5faa]" },
+const TIER_STYLE: Record<string, { bg: string; text: string; ring: string; hex: string }> = {
+  "rat-tot": { bg: "from-gold-soft/25 to-gold/10", text: "text-gold-soft", ring: "shadow-[0_0_40px_-8px_#d4af37aa]", hex: "#f1d98b" },
+  tot: { bg: "from-moc/20 to-moc/5", text: "text-moc", ring: "shadow-[0_0_40px_-10px_#3ddc8488]", hex: "#3ddc84" },
+  "binh-thuong": { bg: "from-white/10 to-white/0", text: "text-white/80", ring: "", hex: "#cbd5e1" },
+  xau: { bg: "from-tho/20 to-tho/5", text: "text-tho", ring: "shadow-[0_0_40px_-10px_#e0a94a88]", hex: "#e0a94a" },
+  "rat-xau": { bg: "from-hoa/25 to-hoa/5", text: "text-hoa", ring: "shadow-[0_0_40px_-8px_#ff5f5faa]", hex: "#ff5f5f" },
 };
+
+function PercentGauge({ percent, color }: { percent: number; color: string }) {
+  return (
+    <div
+      className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-full"
+      style={{ background: `conic-gradient(${color} ${percent * 3.6}deg, rgba(255,255,255,0.1) 0deg)` }}
+      role="meter"
+      aria-valuenow={percent}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`Điểm ngày: ${percent} trên 100`}
+    >
+      <div className="absolute inset-[5px] rounded-full bg-cosmic/90 backdrop-blur-sm grid place-items-center border border-white/10">
+        <span className="font-display text-2xl sm:text-3xl font-semibold leading-none" style={{ color }}>
+          {percent}
+        </span>
+        <span className="text-[10px] text-white/40 mt-1">/ 100</span>
+      </div>
+    </div>
+  );
+}
 
 export function DayLookup() {
   const [dateStr, setDateStr] = useState(() => toISODate(new Date()));
@@ -72,14 +93,17 @@ export function DayLookup() {
                 transition={{ duration: 0.35 }}
                 className={`mt-8 rounded-2xl p-6 sm:p-8 bg-linear-to-br ${style.bg} border border-white/10 ${style.ring}`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-6 mb-6">
                   <div className="flex items-center gap-3">
                     <CanBadge name={verdict.pillar.can.name} size="lg" />
                     <ChiBadge name={verdict.pillar.chi.name} size="lg" />
                   </div>
-                  <span className={`font-display text-2xl sm:text-3xl font-semibold ${style.text}`}>
-                    {verdict.tierLabel}
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <span className={`font-display text-2xl sm:text-3xl font-semibold ${style.text}`}>
+                      {verdict.tierLabel}
+                    </span>
+                    <PercentGauge percent={verdict.percent} color={style.hex} />
+                  </div>
                 </div>
 
                 <p className="text-white/85 leading-relaxed mb-5">{verdict.summary}</p>

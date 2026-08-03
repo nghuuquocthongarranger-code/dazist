@@ -1,19 +1,17 @@
 import { Suspense, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stars, Html, Sphere, Ring } from "@react-three/drei";
+import { OrbitControls, Stars, Html, Sphere, Ring, useTexture } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ELEMENT_COLOR, ELEMENT_LABEL, type Element } from "../lib/elements";
 import { elementRatios } from "../data/baziProfile";
-import {
-  mercuryTexture,
-  venusTexture,
-  marsTexture,
-  jupiterTexture,
-  saturnTexture,
-  saturnRingTexture,
-  sunTexture,
-} from "../lib/planetTextures";
+import mercuryImg from "../assets/textures/mercury.jpg";
+import venusImg from "../assets/textures/venus.jpg";
+import marsImg from "../assets/textures/mars.jpg";
+import jupiterImg from "../assets/textures/jupiter.jpg";
+import saturnImg from "../assets/textures/saturn.jpg";
+import saturnRingImg from "../assets/textures/saturn_ring.png";
+import sunImg from "../assets/textures/sun.jpg";
 
 const ORBIT_ORDER: Element[] = ["moc", "hoa", "tho", "kim", "thuy"];
 
@@ -25,12 +23,13 @@ const PLANET_NAME: Record<Element, string> = {
   thuy: "Sao Thủy",
 };
 
-const TEXTURE_BY_ELEMENT: Record<Element, () => THREE.CanvasTexture> = {
-  moc: jupiterTexture,
-  hoa: marsTexture,
-  tho: saturnTexture,
-  kim: venusTexture,
-  thuy: mercuryTexture,
+// Ảnh bề mặt thật (NASA / Solar System Scope, CC BY 4.0) ứng với ngũ tinh cổ truyền
+const TEXTURE_URL_BY_ELEMENT: Record<Element, string> = {
+  moc: jupiterImg,
+  hoa: marsImg,
+  tho: saturnImg,
+  kim: venusImg,
+  thuy: mercuryImg,
 };
 
 function usePrefersReducedMotion() {
@@ -41,13 +40,14 @@ function usePrefersReducedMotion() {
 }
 
 function SaturnRing({ size }: { size: number }) {
-  const texture = useMemo(() => saturnRingTexture(), []);
+  const texture = useTexture(saturnRingImg);
+  texture.colorSpace = THREE.SRGBColorSpace;
   return (
     <Ring args={[size * 1.5, size * 2.4, 64]} rotation={[Math.PI / 2.35, 0, 0]}>
       <meshBasicMaterial
         map={texture}
         transparent
-        opacity={0.85}
+        opacity={0.9}
         side={THREE.DoubleSide}
         depthWrite={false}
       />
@@ -72,7 +72,9 @@ function Planet({
   const [hovered, setHovered] = useState(false);
   const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
   const color = ELEMENT_COLOR[element];
-  const texture = useMemo(() => TEXTURE_BY_ELEMENT[element](), [element]);
+  const texture = useTexture(TEXTURE_URL_BY_ELEMENT[element]);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
   const tilt = useMemo(() => (Math.random() - 0.5) * 0.3, []);
 
   useFrame((state) => {
@@ -88,8 +90,8 @@ function Planet({
     <group ref={groupRef}>
       <group rotation={[tilt, 0, tilt * 0.6]}>
         <mesh onPointerOver={() => setHovered(true)} onPointerOut={() => setHovered(false)}>
-          <sphereGeometry args={[size, 56, 56]} />
-          <meshStandardMaterial map={texture} roughness={0.85} metalness={0.05} />
+          <sphereGeometry args={[size, 64, 64]} />
+          <meshStandardMaterial map={texture} roughness={0.9} metalness={0.02} />
         </mesh>
         {/* quầng khí đại diện Ngũ Hành — giữ mặt hành tinh thật rõ nét, chỉ viền màu bao quanh */}
         <mesh scale={hovered ? 1.22 : 1.12}>
@@ -126,7 +128,8 @@ function OrbitRing({ radius }: { radius: number }) {
 }
 
 function Sun() {
-  const texture = useMemo(() => sunTexture(), []);
+  const texture = useTexture(sunImg);
+  texture.colorSpace = THREE.SRGBColorSpace;
   const ref = useRef<THREE.Mesh>(null);
   useFrame((_, delta) => {
     if (ref.current) ref.current.rotation.y += delta * 0.03;
@@ -134,7 +137,7 @@ function Sun() {
   return (
     <>
       <Sphere ref={ref} args={[1.15, 64, 64]}>
-        <meshStandardMaterial map={texture} emissive="#ffb454" emissiveIntensity={1.7} roughness={1} />
+        <meshStandardMaterial map={texture} emissive="#ffb454" emissiveIntensity={1.4} roughness={1} />
       </Sphere>
       {/* quầng sáng phụ để mô phỏng vành nhật hoa khi bloom cộng hưởng */}
       <Sphere args={[1.35, 32, 32]}>
@@ -210,7 +213,7 @@ function Scene({ reduced }: { reduced: boolean }) {
       />
       {!reduced && (
         <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={0.9} luminanceThreshold={0.25} luminanceSmoothing={0.15} />
+          <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.3} luminanceSmoothing={0.15} />
         </EffectComposer>
       )}
     </>

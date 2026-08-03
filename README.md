@@ -35,5 +35,9 @@ Thay thế: dùng FTP/SFTP (thông tin trong hPanel → Files → FTP Accounts) 
 ## Cấu trúc dữ liệu
 
 - `src/data/baziProfile.ts` — toàn bộ nội dung lá số (Tứ Trụ, Thập Thần, Dụng/Hỷ/Kỵ Thần, Thần Sát, Đại Vận...).
-- `src/lib/canChi.ts` — thuật toán tính Can Chi của ngày (Julian Day Number) và đối chiếu Thập Thần/Dụng-Hỷ-Kỵ để chấm điểm ngày tốt/xấu.
+- `src/lib/canChi.ts` — thuật toán tính Can Chi của ngày (Julian Day Number) và đối chiếu Thập Thần/Dụng-Hỷ-Kỵ để chấm điểm ngày tốt/xấu (thang 0-100).
 - `src/lib/elements.ts` — bảng màu và quan hệ sinh/khắc Ngũ Hành.
+
+## Bản quyền texture hành tinh
+
+Ảnh bề mặt Sao Thủy/Kim/Hỏa/Mộc/Thổ, vành đai Sao Thổ và Mặt Trời trong `src/assets/textures/` lấy từ [Solar System Scope](https://www.solarsystemscope.com/textures/), phát hành theo giấy phép **Creative Commons Attribution 4.0 International (CC BY 4.0)** — được phép dùng cho mục đích thương mại lẫn phi thương mại, miễn ghi nguồn.
