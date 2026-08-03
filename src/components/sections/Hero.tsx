@@ -6,7 +6,7 @@ const Hero3D = lazy(() => import("../Hero3D").then((m) => ({ default: m.Hero3D }
 
 export function Hero() {
   return (
-    <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden flex items-end sm:items-center justify-center">
+    <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden flex items-start justify-center pt-28 sm:pt-32">
       <Suspense fallback={<div className="absolute inset-0 bg-cosmic" />}>
         <Hero3D />
       </Suspense>
@@ -18,15 +18,8 @@ export function Hero() {
             "radial-gradient(ellipse at 50% 68%, transparent 0%, rgba(5,4,10,0.2) 60%, rgba(5,4,10,0.75) 100%)",
         }}
       />
-      {/* Vùng tối riêng phía sau khối chữ để tên/tiêu đề luôn rõ dù hệ mặt trời phía sau sáng hay tối */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 65% 55% at 50% 42%, rgba(5,4,10,0.72) 0%, rgba(5,4,10,0.35) 55%, transparent 85%)",
-        }}
-      />
 
-      <div className="relative z-10 px-6 pb-16 sm:pb-0 text-center max-w-3xl mx-auto">
+      <div className="relative z-10 px-6 text-center max-w-3xl mx-auto">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

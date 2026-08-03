@@ -25,14 +25,13 @@ const TEXTURE_URL_BY_ELEMENT: Record<Element, string> = {
   thuy: mercuryImg,
 };
 
-// Bán kính & tốc độ quỹ đạo riêng từng hành tinh — giãn cách tăng dần ra ngoài cho cân đối,
-// Sao Thổ đặt xa nhất vì có vành đai choán thêm không gian.
+// Bán kính quỹ đạo cách đều nhau cho cân bằng thị giác — Sao Thổ vẫn ở vòng ngoài cùng vì có vành đai.
 const ORBIT_RADIUS: Record<Element, number> = {
-  moc: 2.1,
-  thuy: 3.0,
-  kim: 4.1,
-  hoa: 5.3,
-  tho: 7.3,
+  moc: 2.4,
+  thuy: 3.9,
+  kim: 5.4,
+  hoa: 6.9,
+  tho: 8.4,
 };
 const ORBIT_SPEED: Record<Element, number> = {
   moc: 0.2,
@@ -219,7 +218,7 @@ export function Hero3D() {
   return (
     <div className="absolute inset-0" aria-hidden="true">
       <Suspense fallback={null}>
-        <Canvas camera={{ position: [0, 7, 20], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
+        <Canvas camera={{ position: [0, 7, 22], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
           <Scene reduced={reduced} />
         </Canvas>
       </Suspense>
