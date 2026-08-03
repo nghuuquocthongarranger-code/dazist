@@ -41,6 +41,16 @@ const ORBIT_SPEED: Record<Element, number> = {
   tho: 0.085,
 };
 
+// Góc khởi đầu cố định (thay vì random) để hai bên trái/phải luôn cân bằng số lượng hành tinh
+// ngay từ khung hình đầu tiên: moc + hoa bên phải, thuy + kim bên trái, tho ở chính giữa phía sau.
+const ORBIT_ANGLE: Record<Element, number> = {
+  moc: (55 * Math.PI) / 180,
+  hoa: (335 * Math.PI) / 180,
+  thuy: (195 * Math.PI) / 180,
+  kim: (165 * Math.PI) / 180,
+  tho: (270 * Math.PI) / 180,
+};
+
 function usePrefersReducedMotion() {
   return useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -69,16 +79,17 @@ function Planet({
   radius,
   speed,
   size,
+  angleOffset,
   reduced,
 }: {
   element: Element;
   radius: number;
   speed: number;
   size: number;
+  angleOffset: number;
   reduced: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
   const texture = useTexture(TEXTURE_URL_BY_ELEMENT[element]);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
@@ -194,7 +205,14 @@ function Scene({ reduced }: { reduced: boolean }) {
           return (
             <group key={el}>
               <OrbitRing radius={radius} />
-              <Planet element={el} radius={radius} speed={speed} size={size} reduced={reduced} />
+              <Planet
+                element={el}
+                radius={radius}
+                speed={speed}
+                size={size}
+                angleOffset={ORBIT_ANGLE[el]}
+                reduced={reduced}
+              />
             </group>
           );
         })}
