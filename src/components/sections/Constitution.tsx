@@ -2,13 +2,6 @@ import { GlassCard, SectionHeading } from "../GlassCard";
 import { bodyStrength, dungHyKy, tamThinTuHinh } from "../../data/baziProfile";
 import { ELEMENT_COLOR } from "../../lib/elements";
 
-const ROLE_ELEMENT: Record<string, keyof typeof ELEMENT_COLOR> = {
-  "dung-than": "moc",
-  "hy-than": "thuy",
-  "hy-than-phu": "kim",
-  "ky-than": "hoa",
-};
-
 export function Constitution() {
   return (
     <section className="py-20 sm:py-28 px-6">
@@ -32,11 +25,11 @@ export function Constitution() {
           </div>
         </GlassCard>
 
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
           {dungHyKy.map((d, i) => {
-            const color = ELEMENT_COLOR[ROLE_ELEMENT[d.role]];
+            const color = ELEMENT_COLOR[d.colorElement];
             return (
-              <GlassCard key={d.role} delay={i * 0.06}>
+              <GlassCard key={`${d.role}-${d.colorElement}`} delay={i * 0.06}>
                 <div className="flex items-center gap-3 mb-3">
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"

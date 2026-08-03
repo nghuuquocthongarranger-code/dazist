@@ -97,27 +97,38 @@ export const bodyStrength = {
 export const dungHyKy = [
   {
     role: "dung-than" as const,
+    colorElement: "moc" as const,
     title: "Dụng Thần",
     element: "Mộc (Quan Sát)",
     desc: "Lực duy nhất đủ sức khắc chế trực tiếp khối Thổ quá vượng, cắt được thế bảo thủ/tranh giành của Tỉ Kiếp. (Ất Mộc — chỉ ẩn tàng trong 3 Thìn, chưa thấu can)",
   },
   {
     role: "hy-than" as const,
+    colorElement: "thuy" as const,
     title: "Hỷ Thần",
     element: "Thủy",
     desc: "Đi đôi với Mộc theo nguyên lý Thủy sinh Mộc, nuôi dưỡng và tiếp sức để Mộc đủ lực phát huy. (Nhâm Thủy thấu can ở Tháng; Quý Thủy ẩn tàng cả 3 Thìn)",
   },
   {
     role: "hy-than-phu" as const,
+    colorElement: "kim" as const,
     title: "Hỷ Thần phụ",
     element: "Kim",
     desc: "Chỉ có tác dụng tiết bớt Thổ, không trực tiếp khắc chế được, và còn khắc ngược lại Mộc nếu quá vượng nên chỉ dùng ở mức bổ trợ. (Tân Kim thấu can ở Năm)",
   },
   {
     role: "ky-than" as const,
+    colorElement: "tho" as const,
     title: "Kỵ Thần",
-    element: "Thổ và Hỏa",
-    desc: "Thổ vốn đã dư thừa nghiêm trọng, Hỏa lại sinh thêm Thổ nên tối kỵ gặp thêm cả hai (Tỉ Kiên, Kiếp Tài, Thiên Ấn).",
+    element: "Thổ",
+    desc: "Vốn đã dư thừa nghiêm trọng (Tỉ Kiên, Kiếp Tài chiếm ~38.8%) — tối kỵ gặp thêm, càng khiến Thân vượng cực đoan, dễ bảo thủ, ỳ trệ, tranh giành.",
+  },
+  {
+    role: "ky-than" as const,
+    colorElement: "hoa" as const,
+    title: "Kỵ Thần",
+    element: "Hỏa",
+    desc: "Thiên Ấn Hỏa sinh thêm cho khối Thổ vốn đã dư — tối kỵ gặp thêm, dễ tạo áp lực/kỳ vọng nặng nề và củng cố thêm thế ỳ trệ của Thổ.",
   },
 ];
 
@@ -250,14 +261,14 @@ export const thanSatSummary =
   "Nhóm hung (Thiên La, Quả Tú, Kiếp Sát, Lưu Hà Sát) xoay quanh bó buộc/hao tổn/cô đơn cần chủ động hóa giải; nhóm cát khá dồi dào, đóng vai trò nâng đỡ. Hoa Cái–Thái Cực là \"lối thoát\" tự nhiên: càng đi sâu tri thức/nội tâm/tâm linh càng dễ tìm cân bằng.";
 
 export const daiVan = [
-  { ganChi: "Tân Mão", start: "06/2011", age: 11, tenGod: "Thương Quan", favorable: true },
-  { ganChi: "Canh Dần", start: "06/2021", age: 21, tenGod: "Thực Thần", favorable: true, current: true },
-  { ganChi: "Kỷ Sửu", start: "06/2031", age: 31, tenGod: "Kiếp Tài", favorable: false },
-  { ganChi: "Mậu Tý", start: "06/2041", age: 41, tenGod: "Tỉ Kiên", favorable: false },
-  { ganChi: "Đinh Hợi", start: "06/2051", age: 51, tenGod: "Chính Ấn", favorable: true },
-  { ganChi: "Bính Tuất", start: "05/2061", age: 61, tenGod: "Thiên Ấn", favorable: false },
-  { ganChi: "Ất Dậu", start: "05/2071", age: 71, tenGod: "Chính Quan", favorable: true },
-  { ganChi: "Giáp Thân", start: "05/2081", age: 81, tenGod: "Thất Sát", favorable: true },
+  { ganChi: "Tân Mão", start: "06/2011", startYear: 2011, age: 11, tenGod: "Thương Quan", favorable: true },
+  { ganChi: "Canh Dần", start: "06/2021", startYear: 2021, age: 21, tenGod: "Thực Thần", favorable: true },
+  { ganChi: "Kỷ Sửu", start: "06/2031", startYear: 2031, age: 31, tenGod: "Kiếp Tài", favorable: false },
+  { ganChi: "Mậu Tý", start: "06/2041", startYear: 2041, age: 41, tenGod: "Tỉ Kiên", favorable: false },
+  { ganChi: "Đinh Hợi", start: "06/2051", startYear: 2051, age: 51, tenGod: "Chính Ấn", favorable: true },
+  { ganChi: "Bính Tuất", start: "05/2061", startYear: 2061, age: 61, tenGod: "Thiên Ấn", favorable: false },
+  { ganChi: "Ất Dậu", start: "05/2071", startYear: 2071, age: 71, tenGod: "Chính Quan", favorable: true },
+  { ganChi: "Giáp Thân", start: "05/2081", startYear: 2081, age: 81, tenGod: "Thất Sát", favorable: true },
 ];
 
 export const daiVanNote =

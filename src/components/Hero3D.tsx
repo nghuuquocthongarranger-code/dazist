@@ -1,9 +1,9 @@
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stars, Html, Sphere, Ring, useTexture } from "@react-three/drei";
+import { OrbitControls, Stars, Sphere, Ring, useTexture } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { ELEMENT_COLOR, ELEMENT_LABEL, type Element } from "../lib/elements";
+import { ELEMENT_COLOR, type Element } from "../lib/elements";
 import { elementRatios } from "../data/baziProfile";
 import mercuryImg from "../assets/textures/mercury.jpg";
 import venusImg from "../assets/textures/venus.jpg";
@@ -14,14 +14,6 @@ import saturnRingImg from "../assets/textures/saturn_ring.png";
 import sunImg from "../assets/textures/sun.jpg";
 
 const ORBIT_ORDER: Element[] = ["moc", "hoa", "tho", "kim", "thuy"];
-
-const PLANET_NAME: Record<Element, string> = {
-  moc: "Sao Mộc",
-  hoa: "Sao Hỏa",
-  tho: "Sao Thổ",
-  kim: "Sao Kim",
-  thuy: "Sao Thủy",
-};
 
 // Ảnh bề mặt thật (NASA / Solar System Scope, CC BY 4.0) ứng với ngũ tinh cổ truyền
 const TEXTURE_URL_BY_ELEMENT: Record<Element, string> = {
@@ -69,7 +61,6 @@ function Planet({
   reduced: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const [hovered, setHovered] = useState(false);
   const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
   const color = ELEMENT_COLOR[element];
   const texture = useTexture(TEXTURE_URL_BY_ELEMENT[element]);
@@ -89,32 +80,23 @@ function Planet({
   return (
     <group ref={groupRef}>
       <group rotation={[tilt, 0, tilt * 0.6]}>
-        <mesh onPointerOver={() => setHovered(true)} onPointerOut={() => setHovered(false)}>
+        <mesh>
           <sphereGeometry args={[size, 64, 64]} />
           <meshStandardMaterial map={texture} roughness={0.9} metalness={0.02} />
         </mesh>
-        {/* quầng khí đại diện Ngũ Hành — giữ mặt hành tinh thật rõ nét, chỉ viền màu bao quanh */}
-        <mesh scale={hovered ? 1.22 : 1.12}>
+        {/* quầng khí đại diện Ngũ Hành — cố định, không phản ứng theo tương tác chuột */}
+        <mesh scale={1.12}>
           <sphereGeometry args={[size, 32, 32]} />
           <meshBasicMaterial
             color={color}
             transparent
-            opacity={hovered ? 0.28 : 0.14}
+            opacity={0.14}
             depthWrite={false}
             blending={THREE.AdditiveBlending}
           />
         </mesh>
         {element === "tho" && <SaturnRing size={size} />}
       </group>
-      {hovered && (
-        <Html distanceFactor={10} position={[0, size + 0.6, 0]} center>
-          <div className="glass glass-gold-edge rounded-full px-3 py-1 text-xs whitespace-nowrap font-display pointer-events-none">
-            <span style={{ color }}>
-              {PLANET_NAME[element]} · {ELEMENT_LABEL[element]}
-            </span>
-          </div>
-        </Html>
-      )}
     </group>
   );
 }
@@ -137,11 +119,17 @@ function Sun() {
   return (
     <>
       <Sphere ref={ref} args={[1.15, 64, 64]}>
-        <meshStandardMaterial map={texture} emissive="#ffb454" emissiveIntensity={1.4} roughness={1} />
+        <meshStandardMaterial map={texture} emissive="#ff9d2e" emissiveIntensity={0.55} roughness={1} />
       </Sphere>
-      {/* quầng sáng phụ để mô phỏng vành nhật hoa khi bloom cộng hưởng */}
-      <Sphere args={[1.35, 32, 32]}>
-        <meshBasicMaterial color="#ffcf7a" transparent opacity={0.12} depthWrite={false} />
+      {/* Vành nhật hoa nhiều lớp — tạo cảm giác ánh sáng lan tỏa thật thay vì một khối mờ phẳng */}
+      <Sphere args={[1.32, 32, 32]}>
+        <meshBasicMaterial color="#ffb454" transparent opacity={0.22} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </Sphere>
+      <Sphere args={[1.55, 32, 32]}>
+        <meshBasicMaterial color="#ff9d2e" transparent opacity={0.1} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </Sphere>
+      <Sphere args={[1.9, 24, 24]}>
+        <meshBasicMaterial color="#ffcf7a" transparent opacity={0.045} depthWrite={false} blending={THREE.AdditiveBlending} />
       </Sphere>
     </>
   );
@@ -185,16 +173,16 @@ function Scene({ reduced }: { reduced: boolean }) {
 
   return (
     <>
-      <ambientLight intensity={0.65} />
-      <pointLight position={[0, 0, 0]} intensity={6} color="#ffcf7a" distance={50} decay={1.6} />
-      <hemisphereLight args={["#8ea6d8", "#0b0a18", 0.4]} />
+      <ambientLight intensity={0.75} />
+      <pointLight position={[0, 0, 0]} intensity={6} color="#ffcf7a" distance={60} decay={1.3} />
+      <hemisphereLight args={["#8ea6d8", "#0b0a18", 0.5]} />
       <Nebula />
       <Stars radius={90} depth={50} count={4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.6} />
       <Sun />
       {ORBIT_ORDER.map((el, i) => {
-        const radius = 2.7 + i * 1.4;
+        const radius = 2.2 + i * 1.05;
         const pct = ratioMap.get(el) ?? 10;
-        const size = 0.26 + (pct / 40) * 0.55;
+        const size = 0.24 + (pct / 40) * 0.5;
         const speed = 0.16 - i * 0.02;
         return (
           <group key={el}>
@@ -213,7 +201,7 @@ function Scene({ reduced }: { reduced: boolean }) {
       />
       {!reduced && (
         <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.3} luminanceSmoothing={0.15} />
+          <Bloom mipmapBlur intensity={0.6} luminanceThreshold={0.35} luminanceSmoothing={0.2} />
         </EffectComposer>
       )}
     </>
@@ -225,7 +213,7 @@ export function Hero3D() {
   return (
     <div className="absolute inset-0" aria-hidden="true">
       <Suspense fallback={null}>
-        <Canvas camera={{ position: [0, 5, 13], fov: 45 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
+        <Canvas camera={{ position: [0, 6, 17], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
           <Scene reduced={reduced} />
         </Canvas>
       </Suspense>

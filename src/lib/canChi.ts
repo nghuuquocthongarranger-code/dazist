@@ -1,5 +1,5 @@
 import type { Element, DungHyKy } from "./elements";
-import { ELEMENT_ROLE, ROLE_SCORE, ROLE_LABEL } from "./elements";
+import { ELEMENT_ROLE, ELEMENT_LABEL, ROLE_SCORE, ROLE_LABEL } from "./elements";
 
 export type Polarity = "duong" | "am";
 
@@ -44,6 +44,56 @@ export const CHI: ChiInfo[] = [
   { name: "Tuất", element: "tho", animal: "Chó" },
   { name: "Hợi", element: "thuy", animal: "Lợn" },
 ];
+
+/** Tàng Can của 12 Địa Chi kèm trọng số (chính khí / trung khí / dư khí) — thứ tự khớp cách dùng trong Tứ Trụ ở trên. */
+export const CHI_HIDDEN_CAN: Record<string, { can: string; weight: number }[]> = {
+  Tý: [{ can: "Quý", weight: 1.0 }],
+  Sửu: [
+    { can: "Kỷ", weight: 0.6 },
+    { can: "Quý", weight: 0.3 },
+    { can: "Tân", weight: 0.1 },
+  ],
+  Dần: [
+    { can: "Giáp", weight: 0.6 },
+    { can: "Bính", weight: 0.3 },
+    { can: "Mậu", weight: 0.1 },
+  ],
+  Mão: [{ can: "Ất", weight: 1.0 }],
+  Thìn: [
+    { can: "Mậu", weight: 0.6 },
+    { can: "Ất", weight: 0.3 },
+    { can: "Quý", weight: 0.1 },
+  ],
+  Tỵ: [
+    { can: "Bính", weight: 0.6 },
+    { can: "Mậu", weight: 0.3 },
+    { can: "Canh", weight: 0.1 },
+  ],
+  Ngọ: [
+    { can: "Đinh", weight: 0.7 },
+    { can: "Kỷ", weight: 0.3 },
+  ],
+  Mùi: [
+    { can: "Kỷ", weight: 0.6 },
+    { can: "Đinh", weight: 0.3 },
+    { can: "Ất", weight: 0.1 },
+  ],
+  Thân: [
+    { can: "Canh", weight: 0.6 },
+    { can: "Nhâm", weight: 0.3 },
+    { can: "Mậu", weight: 0.1 },
+  ],
+  Dậu: [{ can: "Tân", weight: 1.0 }],
+  Tuất: [
+    { can: "Mậu", weight: 0.6 },
+    { can: "Tân", weight: 0.3 },
+    { can: "Đinh", weight: 0.1 },
+  ],
+  Hợi: [
+    { can: "Nhâm", weight: 0.7 },
+    { can: "Giáp", weight: 0.3 },
+  ],
+};
 
 /** Thập Thần cố định theo Nhật Chủ Mậu (Dương Thổ) — dùng cho hồ sơ DaZiST demo */
 export const TEN_GOD_BY_CAN_INDEX_FOR_MAU: string[] = [
@@ -100,11 +150,58 @@ export function getDayPillar(date: Date): DayPillar {
   return { jdn, canIndex, chiIndex, can, chi, label: `${can.name} ${chi.name}` };
 }
 
+export interface YearPillar {
+  year: number;
+  canIndex: number;
+  chiIndex: number;
+  can: CanInfo;
+  chi: ChiInfo;
+  label: string;
+}
+
+/**
+ * Can Chi năm Dương lịch (xấp xỉ theo năm dương lịch, mốc chuẩn 1984 = Giáp Tý).
+ * Lưu Niên luôn chạy thuận chiều 60 Giáp Tý bất kể Đại Vận thuận hay nghịch.
+ */
+export function getYearPillar(year: number): YearPillar {
+  const offset = year - 4;
+  const canIndex = (((offset % 10) + 10) % 10);
+  const chiIndex = (((offset % 12) + 12) % 12);
+  const can = CAN[canIndex];
+  const chi = CHI[chiIndex];
+  return { year, canIndex, chiIndex, can, chi, label: `${can.name} ${chi.name}` };
+}
+
+export interface HiddenStemDetail {
+  can: string;
+  element: Element;
+  weight: number;
+  role: DungHyKy;
+  tenGod: string;
+}
+
+/** Tàng Can của một Địa Chi kèm Thập Thần + vai trò Dụng/Hỷ/Kỵ (so với Nhật Chủ Mậu) */
+export function getHiddenStems(chiName: string): HiddenStemDetail[] {
+  const entries = CHI_HIDDEN_CAN[chiName] ?? [];
+  return entries.map(({ can, weight }) => {
+    const canIndex = CAN.findIndex((c) => c.name === can);
+    const canInfo = CAN[canIndex];
+    return {
+      can,
+      element: canInfo.element,
+      weight,
+      role: ELEMENT_ROLE[canInfo.element],
+      tenGod: TEN_GOD_BY_CAN_INDEX_FOR_MAU[canIndex],
+    };
+  });
+}
+
 export interface DayVerdict {
   pillar: DayPillar;
   tenGod: string;
   canRole: DungHyKy;
-  chiRole: DungHyKy;
+  chiMainRole: DungHyKy;
+  hiddenStems: HiddenStemDetail[];
   score: number;
   percent: number;
   tier: "rat-tot" | "tot" | "binh-thuong" | "xau" | "rat-xau";
@@ -115,7 +212,8 @@ export interface DayVerdict {
 
 const CAN_WEIGHT = 1.2;
 const CHI_WEIGHT = 1.0;
-// Biên điểm lý thuyết: cả Can lẫn Chi đều là Dụng Thần (tốt nhất) hoặc đều là Kỵ Thần (xấu nhất)
+// Biên điểm lý thuyết: cả Can lẫn Chi đều là Dụng Thần (tốt nhất) hoặc đều là Kỵ Thần (xấu nhất).
+// Tổng trọng số Tàng Can trong CHI_HIDDEN_CAN luôn bằng 1 nên biên này không đổi dù tính theo Tàng Can.
 const MAX_SCORE = ROLE_SCORE["dung-than"] * CAN_WEIGHT + ROLE_SCORE["dung-than"] * CHI_WEIGHT;
 const MIN_SCORE = ROLE_SCORE["ky-than"] * CAN_WEIGHT + ROLE_SCORE["ky-than"] * CHI_WEIGHT;
 
@@ -135,22 +233,26 @@ function tierFromPercent(percent: number): { tier: DayVerdict["tier"]; label: st
 /**
  * Đánh giá ngày theo Dụng/Hỷ/Kỵ Thần của hồ sơ Mậu Thổ (Thân cực vượng, Dụng Thần Mộc, Hỷ Thần Thủy).
  * Trọng số Can 1.2 / Chi 1.0 vì Can lộ ra ngoài có ảnh hưởng trực tiếp hơn Chi tàng.
+ * Phần đóng góp của Chi được tính theo TỪNG Tàng Can (chính khí/trung khí/dư khí) thay vì chỉ
+ * dùng hành chủ của Chi, để bám sát cách luận Tàng Can thực tế trong Bát Tự.
  * Điểm quy đổi thang 0-100: 0 = cả Can/Chi đều Kỵ Thần, 100 = cả Can/Chi đều Dụng Thần.
  */
 export function evaluateDay(date: Date): DayVerdict {
   const pillar = getDayPillar(date);
   const tenGod = TEN_GOD_BY_CAN_INDEX_FOR_MAU[pillar.canIndex];
   const canRole = ELEMENT_ROLE[pillar.can.element];
-  const chiRole = ELEMENT_ROLE[pillar.chi.element];
+  const chiMainRole = ELEMENT_ROLE[pillar.chi.element];
+  const hiddenStems = getHiddenStems(pillar.chi.name);
 
-  const score = ROLE_SCORE[canRole] * CAN_WEIGHT + ROLE_SCORE[chiRole] * CHI_WEIGHT;
+  const chiScore = hiddenStems.reduce((sum, h) => sum + ROLE_SCORE[h.role] * h.weight, 0);
+  const score = ROLE_SCORE[canRole] * CAN_WEIGHT + chiScore * CHI_WEIGHT;
   const percent = scoreToPercent(score);
 
   const { tier, label } = tierFromPercent(percent);
 
   const detail: string[] = [
-    `Can ngày ${pillar.can.name} (${ROLE_LABEL[canRole]}, hành ${pillar.can.element === "moc" ? "Mộc" : pillar.can.element === "hoa" ? "Hỏa" : pillar.can.element === "tho" ? "Thổ" : pillar.can.element === "kim" ? "Kim" : "Thủy"}) — ứng Thập Thần ${tenGod}.`,
-    `Chi ngày ${pillar.chi.name} (${ROLE_LABEL[chiRole]}, hành ${pillar.chi.element === "moc" ? "Mộc" : pillar.chi.element === "hoa" ? "Hỏa" : pillar.chi.element === "tho" ? "Thổ" : pillar.chi.element === "kim" ? "Kim" : "Thủy"}).`,
+    `Can ngày ${pillar.can.name} (${ROLE_LABEL[canRole]}, hành ${ELEMENT_LABEL[pillar.can.element]}) — ứng Thập Thần ${tenGod}.`,
+    `Chi ngày ${pillar.chi.name} tàng ${hiddenStems.map((h) => `${h.can} (${ROLE_LABEL[h.role]})`).join(", ")}.`,
   ];
 
   let summary = "";
@@ -174,5 +276,5 @@ export function evaluateDay(date: Date): DayVerdict {
       break;
   }
 
-  return { pillar, tenGod, canRole, chiRole, score, percent, tier, tierLabel: label, summary, detail };
+  return { pillar, tenGod, canRole, chiMainRole, hiddenStems, score, percent, tier, tierLabel: label, summary, detail };
 }

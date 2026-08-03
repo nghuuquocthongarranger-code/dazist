@@ -59,7 +59,7 @@ export function DayLookup() {
         <SectionHeading
           eyebrow="Công cụ cá nhân hóa"
           title="Hôm nay là ngày tốt hay xấu?"
-          subtitle="Đối chiếu Can Chi của ngày bạn chọn với Dụng Thần (Mộc), Hỷ Thần (Thủy) và Kỵ Thần (Thổ, Hỏa) trong lá số của bạn."
+          subtitle="Đối chiếu Can ngày và Tàng Can trong Chi ngày (chính khí, trung khí, dư khí) với Dụng Thần (Mộc), Hỷ Thần (Thủy) và Kỵ Thần (Thổ, Hỏa) trong lá số của bạn."
         />
 
         <div className="glass glass-gold-edge rounded-3xl p-6 sm:p-10">
@@ -110,17 +110,28 @@ export function DayLookup() {
 
                 <div className="grid sm:grid-cols-2 gap-3 text-sm text-white/65">
                   <div className="rounded-xl bg-black/20 p-4 border border-white/5">
-                    <p className="text-white/40 uppercase tracking-wider text-xs mb-1">Can ngày</p>
+                    <p className="text-white/40 uppercase tracking-wider text-xs mb-1">Can ngày (lộ)</p>
                     <p>
                       {verdict.pillar.can.name} — {ROLE_LABEL[verdict.canRole]} · Thập Thần{" "}
                       <span className="text-gold-soft">{verdict.tenGod}</span>
                     </p>
                   </div>
                   <div className="rounded-xl bg-black/20 p-4 border border-white/5">
-                    <p className="text-white/40 uppercase tracking-wider text-xs mb-1">Chi ngày</p>
-                    <p>
-                      {verdict.pillar.chi.name} — {ROLE_LABEL[verdict.chiRole]}
+                    <p className="text-white/40 uppercase tracking-wider text-xs mb-1">
+                      Chi ngày {verdict.pillar.chi.name} — Tàng Can
                     </p>
+                    <ul className="space-y-1">
+                      {verdict.hiddenStems.map((h) => (
+                        <li key={h.can} className="flex justify-between gap-2">
+                          <span>
+                            {h.can} <span className="text-white/35">({Math.round(h.weight * 100)}%)</span>
+                          </span>
+                          <span className="text-right">
+                            {h.tenGod} · <span className="text-gold-soft">{ROLE_LABEL[h.role]}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </motion.div>
