@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant Garamond", "Be Vietnam Pro", serif;
+  --font-body: "Be Vietnam Pro", system-ui, sans-serif;
+
+  /* Ngũ Hành palette */
+  --color-moc: #3ddc84;      /* Mộc - Wood */
+  --color-moc-dim: #1f6b45;
+  --color-hoa: #ff5f5f;      /* Hỏa - Fire */
+  --color-hoa-dim: #7a2323;
+  --color-tho: #e0a94a;      /* Thổ - Earth */
+  --color-tho-dim: #7a5a1e;
+  --color-kim: #f2e6c8;      /* Kim - Metal */
+  --color-kim-dim: #a89a6f;
+  --color-thuy: #4a9fe0;     /* Thủy - Water */
+  --color-thuy-dim: #1e3f6b;
+
+  --color-gold: #d4af37;
+  --color-gold-soft: #f1d98b;
+  --color-cosmic: #05040a;
+  --color-cosmic-2: #0b0a18;
+  --color-cosmic-3: #12102494;
+
+  --animate-orbit: orbit 40s linear infinite;
+  --animate-twinkle: twinkle 3s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes orbit {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-cosmic);
+  color: #ece7f5;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #1a1408;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cosmic);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--color-gold-soft), var(--color-gold));
+  border-radius: 999px;
+}
+
+.glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-gold-edge {
+  position: relative;
+}
+.glass-gold-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.55), rgba(212, 175, 55, 0));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(120deg, #f1d98b, #d4af37 45%, #fff6d6 70%, #d4af37);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
