@@ -6,7 +6,7 @@ const Hero3D = lazy(() => import("../Hero3D").then((m) => ({ default: m.Hero3D }
 
 export function Hero() {
   return (
-    <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden flex items-start justify-center pt-24 sm:pt-28">
+    <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden flex items-start justify-center pt-40 sm:pt-44">
       <Suspense fallback={<div className="absolute inset-0 bg-cosmic" />}>
         <Hero3D />
       </Suspense>
