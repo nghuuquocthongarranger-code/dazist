@@ -179,23 +179,26 @@ function Scene({ reduced }: { reduced: boolean }) {
   return (
     <>
       <ambientLight intensity={0.75} />
-      <pointLight position={[0, 0, 0]} intensity={6} color="#ffcf7a" distance={60} decay={1.3} />
       <hemisphereLight args={["#8ea6d8", "#0b0a18", 0.5]} />
       <Nebula />
       <Stars radius={90} depth={50} count={4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.6} />
-      <Sun />
-      {ORBIT_ORDER.map((el) => {
-        const radius = ORBIT_RADIUS[el];
-        const pct = ratioMap.get(el) ?? 10;
-        const size = 0.24 + (pct / 40) * 0.5;
-        const speed = ORBIT_SPEED[el];
-        return (
-          <group key={el}>
-            <OrbitRing radius={radius} />
-            <Planet element={el} radius={radius} speed={speed} size={size} reduced={reduced} />
-          </group>
-        );
-      })}
+      {/* Cả hệ dời xuống dưới khung hình để chừa khoảng trên cho tiêu đề, đồng thời bớt khoảng trống thừa bên dưới */}
+      <group position={[0, -3.2, 0]}>
+        <pointLight position={[0, 0, 0]} intensity={6} color="#ffcf7a" distance={60} decay={1.3} />
+        <Sun />
+        {ORBIT_ORDER.map((el) => {
+          const radius = ORBIT_RADIUS[el];
+          const pct = ratioMap.get(el) ?? 10;
+          const size = 0.24 + (pct / 40) * 0.5;
+          const speed = ORBIT_SPEED[el];
+          return (
+            <group key={el}>
+              <OrbitRing radius={radius} />
+              <Planet element={el} radius={radius} speed={speed} size={size} reduced={reduced} />
+            </group>
+          );
+        })}
+      </group>
       <OrbitControls
         enableZoom={false}
         enablePan={false}
