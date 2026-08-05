@@ -341,7 +341,7 @@ function Scene({ reduced }: { reduced: boolean }) {
       <directionalLight position={[4, 8, 4]} intensity={0.7} color="#fff6d6" />
       <Nebula />
       <Stars radius={90} depth={50} count={4500} factor={2.6} saturation={0} fade speed={reduced ? 0 : 0.5} />
-      <group position={[0, 0.2, 0]}>
+      <group position={[0, 0.2, 0]} scale={[0.33, 0.33, 0.33]}>
         <OuterRibbon reduced={reduced} />
         <NatureRing glowTexture={glowTexture} />
         <Medallion reduced={reduced} />
