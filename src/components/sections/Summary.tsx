@@ -1,35 +1,34 @@
-import { motion } from "framer-motion";
-import { summary } from "../../data/baziProfile";
+import { combinedSummaryIntro, convergentThemes } from "../../data/combinedSummary";
 
-export function Summary() {
+export function SummaryContent() {
   return (
-    <section className="py-24 sm:py-32 px-6 relative overflow-hidden">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse at 50% 40%, rgba(212,175,55,0.08), transparent 60%)",
-        }}
-      />
-      <div className="max-w-3xl mx-auto text-center relative">
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="uppercase tracking-[0.3em] text-xs sm:text-sm text-gold mb-4"
-        >
-          XIV. Tổng kết
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="font-display text-xl sm:text-2xl md:text-3xl leading-relaxed text-white/90"
-        >
-          {summary}
-        </motion.p>
+    <div>
+      <p className="text-white/60 text-sm mb-6">{combinedSummaryIntro}</p>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        {convergentThemes.map((t) => (
+          <div key={t.title} className="rounded-xl bg-black/20 border border-gold/20 p-4 sm:p-5">
+            <p className="font-display text-base text-gradient-gold font-semibold mb-3">{t.title}</p>
+            <p className="text-xs text-white/45 mb-1.5">
+              <span className="text-gold-soft">Bát Tự:</span> {t.bazi}
+            </p>
+            <p className="text-xs text-white/45 mb-1.5">
+              <span className="text-thuy">Chiêm tinh:</span> {t.western}
+            </p>
+            <p className="text-xs text-white/45 mb-3">
+              <span className="text-gold-soft">Thần số học:</span> {t.numerology}
+            </p>
+            <p className="text-white/75 text-sm leading-relaxed text-left">{t.synthesis}</p>
+          </div>
+        ))}
       </div>
-    </section>
+
+      <p className="text-center text-white/50 text-sm mt-8 leading-relaxed">
+        Khi ba hệ thống độc lập — Bát Tự và Chiêm tinh học (hình thành ở phương Đông và phương Tây) cùng Thần số học
+        (dựa trên toán học biểu tượng) — cùng chỉ về một chủ đề, đó là tín hiệu đáng cân nhắc nghiêm túc hơn so với
+        khi chỉ một hệ thống đơn lẻ nêu ra.
+      </p>
+    </div>
   );
 }
 
@@ -38,7 +37,8 @@ export function Footer() {
     <footer className="py-10 px-6 border-t border-white/10 text-center">
       <p className="font-display text-gradient-gold text-lg mb-1">DaZiST</p>
       <p className="text-white/35 text-xs">
-        Lá số Bát Tự cá nhân hóa — nội dung mang tính tham khảo văn hóa - chiêm tinh phương Đông.
+        Tổng hợp Bát Tự, Chiêm tinh học Tây phương và Tarot — nội dung mang tính tham khảo văn hóa - chiêm tinh, không
+        thay thế lời khuyên chuyên môn.
       </p>
     </footer>
   );

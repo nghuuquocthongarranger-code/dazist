@@ -100,6 +100,7 @@ export const dungHyKy = [
     colorElement: "moc" as const,
     title: "Dụng Thần",
     element: "Mộc (Quan Sát)",
+    tenGod: "Chính Quan (Ất Mộc)",
     desc: "Lực duy nhất đủ sức khắc chế trực tiếp khối Thổ quá vượng, cắt được thế bảo thủ/tranh giành của Tỉ Kiếp. (Ất Mộc — chỉ ẩn tàng trong 3 Thìn, chưa thấu can)",
   },
   {
@@ -107,6 +108,7 @@ export const dungHyKy = [
     colorElement: "thuy" as const,
     title: "Hỷ Thần",
     element: "Thủy",
+    tenGod: "Thiên Tài (Nhâm) & Chính Tài (Quý)",
     desc: "Đi đôi với Mộc theo nguyên lý Thủy sinh Mộc, nuôi dưỡng và tiếp sức để Mộc đủ lực phát huy. (Nhâm Thủy thấu can ở Tháng; Quý Thủy ẩn tàng cả 3 Thìn)",
   },
   {
@@ -114,6 +116,7 @@ export const dungHyKy = [
     colorElement: "kim" as const,
     title: "Hỷ Thần phụ",
     element: "Kim",
+    tenGod: "Thương Quan (Tân)",
     desc: "Chỉ có tác dụng tiết bớt Thổ, không trực tiếp khắc chế được, và còn khắc ngược lại Mộc nếu quá vượng nên chỉ dùng ở mức bổ trợ. (Tân Kim thấu can ở Năm)",
   },
   {
@@ -121,6 +124,7 @@ export const dungHyKy = [
     colorElement: "tho" as const,
     title: "Kỵ Thần",
     element: "Thổ",
+    tenGod: "Tỉ Kiên (Mậu) & Kiếp Tài (Kỷ)",
     desc: "Vốn đã dư thừa nghiêm trọng (Tỉ Kiên, Kiếp Tài chiếm ~38.8%) — tối kỵ gặp thêm, càng khiến Thân vượng cực đoan, dễ bảo thủ, ỳ trệ, tranh giành.",
   },
   {
@@ -128,6 +132,7 @@ export const dungHyKy = [
     colorElement: "hoa" as const,
     title: "Kỵ Thần",
     element: "Hỏa",
+    tenGod: "Thiên Ấn (Bính)",
     desc: "Thiên Ấn Hỏa sinh thêm cho khối Thổ vốn đã dư — tối kỵ gặp thêm, dễ tạo áp lực/kỳ vọng nặng nề và củng cố thêm thế ỳ trệ của Thổ.",
   },
 ];

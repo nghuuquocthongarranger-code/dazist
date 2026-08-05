@@ -26,7 +26,7 @@ export function Hero() {
           transition={{ duration: 0.8 }}
           className="uppercase tracking-[0.4em] text-xs sm:text-sm text-gold mb-5 [text-shadow:0_2px_12px_rgba(0,0,0,0.9)]"
         >
-          DaZiST · Bát Tự Cá Nhân Hóa
+          DaZiST · Huyền Học Cá Nhân Hóa
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -52,17 +52,6 @@ export function Hero() {
         >
           Năm hành tinh quay quanh Nhật Chủ — mỗi vòng quỹ đạo là một Ngũ Hành trong lá số của bạn
         </motion.p>
-
-        <motion.a
-          href="#tra-cuu"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.9, delay: 0.5 }}
-          className="mt-9 inline-flex items-center gap-2 glass glass-gold-edge rounded-full px-6 py-3 text-sm font-medium text-gold-soft hover:brightness-125 transition"
-        >
-          Tra cứu ngày hôm nay
-          <span aria-hidden>↓</span>
-        </motion.a>
       </div>
     </section>
   );

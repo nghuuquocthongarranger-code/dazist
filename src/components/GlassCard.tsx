@@ -50,3 +50,18 @@ export function SectionHeading({
     </motion.div>
   );
 }
+
+export function PartDivider({ label, title }: { label: string; title: string }) {
+  return (
+    <div className="relative py-10 sm:py-14 px-6">
+      <div className="max-w-3xl mx-auto flex items-center gap-4 sm:gap-6">
+        <span className="h-px flex-1 bg-linear-to-r from-transparent to-gold/40" />
+        <div className="text-center shrink-0">
+          <p className="uppercase tracking-[0.35em] text-[10px] sm:text-xs text-gold/70 mb-1.5">{label}</p>
+          <p className="font-display text-lg sm:text-xl text-gradient-gold font-semibold">{title}</p>
+        </div>
+        <span className="h-px flex-1 bg-linear-to-l from-transparent to-gold/40" />
+      </div>
+    </div>
+  );
+}

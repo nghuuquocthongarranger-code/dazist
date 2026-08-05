@@ -1,5 +1,10 @@
+import * as Astronomy from "astronomy-engine";
 import type { Element, DungHyKy } from "./elements";
 import { ELEMENT_ROLE, ELEMENT_LABEL, ROLE_SCORE, ROLE_LABEL } from "./elements";
+
+function normalizeDeg(deg: number): number {
+  return ((deg % 360) + 360) % 360;
+}
 
 export type Polarity = "duong" | "am";
 
@@ -222,7 +227,7 @@ function scoreToPercent(score: number): number {
   return Math.max(0, Math.min(100, Math.round(pct)));
 }
 
-function tierFromPercent(percent: number): { tier: DayVerdict["tier"]; label: string } {
+export function tierFromPercent(percent: number): { tier: DayVerdict["tier"]; label: string } {
   if (percent >= 80) return { tier: "rat-tot", label: "Rất tốt" };
   if (percent >= 60) return { tier: "tot", label: "Tốt" };
   if (percent >= 40) return { tier: "binh-thuong", label: "Bình thường" };
@@ -277,4 +282,149 @@ export function evaluateDay(date: Date): DayVerdict {
   }
 
   return { pillar, tenGod, canRole, chiMainRole, hiddenStems, score, percent, tier, tierLabel: label, summary, detail };
+}
+
+// ---------------------------------------------------------------------------
+// Tiết khí, Trụ Tháng (theo tiết khí thực) và Trụ Năm (ranh giới Lập Xuân) —
+// bổ sung để luận ngày tốt/xấu chính xác hơn thay vì chỉ dựa vào Trụ Ngày.
+// ---------------------------------------------------------------------------
+
+const SOLAR_TERMS = [
+  "Xuân Phân", "Thanh Minh", "Cốc Vũ", "Lập Hạ", "Tiểu Mãn", "Mang Chủng", "Hạ Chí", "Tiểu Thử", "Đại Thử",
+  "Lập Thu", "Xử Thử", "Bạch Lộ", "Thu Phân", "Hàn Lộ", "Sương Giáng", "Lập Đông", "Tiểu Tuyết", "Đại Tuyết",
+  "Đông Chí", "Tiểu Hàn", "Đại Hàn", "Lập Xuân", "Vũ Thủy", "Kinh Trập",
+];
+
+export interface SolarTermInfo {
+  name: string;
+  longitude: number;
+  index: number;
+}
+
+/** Tiết khí hiện tại của một ngày, suy từ kinh độ hoàng đạo thật của Mặt Trời (mỗi tiết cách nhau 15°). */
+export function getSolarTerm(date: Date): SolarTermInfo {
+  const elon = normalizeDeg(Astronomy.SunPosition(date).elon);
+  const index = Math.floor(elon / 15) % 24;
+  return { name: SOLAR_TERMS[index], longitude: elon, index };
+}
+
+function lapXuanOf(calendarYear: number): Date {
+  const searchStart = new Date(Date.UTC(calendarYear, 0, 15));
+  const result = Astronomy.SearchSunLongitude(315, searchStart, 40);
+  if (!result) throw new Error(`Không tìm được Lập Xuân cho năm ${calendarYear}`);
+  return result.date;
+}
+
+/** Năm Bát Tự thực — ranh giới là tiết Lập Xuân (~4/2 Dương lịch), không phải mốc 1/1. */
+export function getBaziYearNumber(date: Date): number {
+  const calYear = date.getFullYear();
+  const lapXuan = lapXuanOf(calYear);
+  return date.getTime() < lapXuan.getTime() ? calYear - 1 : calYear;
+}
+
+const MONTH_CHI_FROM_DAN = ["Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi", "Tý", "Sửu"];
+
+export interface MonthPillar {
+  canIndex: number;
+  chiIndex: number;
+  can: CanInfo;
+  chi: ChiInfo;
+  label: string;
+  solarTerm: SolarTermInfo;
+}
+
+/** Trụ Tháng theo tiết khí thực; Can tháng suy từ Can năm theo quy tắc Ngũ Hổ Độn. */
+export function getMonthPillar(date: Date): MonthPillar {
+  const solarTerm = getSolarTerm(date);
+  const adjusted = normalizeDeg(solarTerm.longitude - 315);
+  const monthIdxFromDan = Math.floor(adjusted / 30) % 12;
+  const chiName = MONTH_CHI_FROM_DAN[monthIdxFromDan];
+  const chiIndex = CHI.findIndex((c) => c.name === chiName);
+  const chi = CHI[chiIndex];
+
+  const yearPillar = getYearPillar(getBaziYearNumber(date));
+  const startCanForDan = (2 * (yearPillar.canIndex % 5) + 2) % 10;
+  const canIndex = (startCanForDan + monthIdxFromDan) % 10;
+  const can = CAN[canIndex];
+
+  return { canIndex, chiIndex, can, chi, label: `${can.name} ${chi.name}`, solarTerm };
+}
+
+const MONTH_CAN_WEIGHT = 1.0;
+const MONTH_CHI_WEIGHT = 0.9;
+const YEAR_CAN_WEIGHT = 0.7;
+const YEAR_CHI_WEIGHT = 0.6;
+const DAY_BLEND = 0.5;
+const MONTH_BLEND = 0.32;
+const YEAR_BLEND = 0.18;
+
+export function pillarPercent(canElement: Element, chiName: string, canWeight: number, chiWeight: number) {
+  const canRole = ELEMENT_ROLE[canElement];
+  const hiddenStems = getHiddenStems(chiName);
+  const chiScore = hiddenStems.reduce((sum, h) => sum + ROLE_SCORE[h.role] * h.weight, 0);
+  const score = ROLE_SCORE[canRole] * canWeight + chiScore * chiWeight;
+  const max = ROLE_SCORE["dung-than"] * canWeight + ROLE_SCORE["dung-than"] * chiWeight;
+  const min = ROLE_SCORE["ky-than"] * canWeight + ROLE_SCORE["ky-than"] * chiWeight;
+  const percent = Math.max(0, Math.min(100, Math.round(((score - min) / (max - min)) * 100)));
+  return { percent, canRole, hiddenStems };
+}
+
+export interface FullDayVerdict {
+  date: Date;
+  day: DayVerdict;
+  monthPillar: MonthPillar;
+  monthPercent: number;
+  monthCanRole: DungHyKy;
+  yearPillar: YearPillar;
+  yearPercent: number;
+  yearCanRole: DungHyKy;
+  baziYear: number;
+  percent: number;
+  tier: DayVerdict["tier"];
+  tierLabel: string;
+  summary: string;
+}
+
+/**
+ * Đánh giá ngày đầy đủ — hòa trộn Trụ Ngày (50%), Trụ Tháng theo tiết khí thực (32%) và Trụ Năm
+ * theo ranh giới Lập Xuân (18%) so với Dụng/Hỷ/Kỵ Thần của lá số gốc, cho kết quả sát thực tế hơn
+ * so với chỉ xét riêng Can Chi ngày.
+ */
+export function evaluateDayFull(date: Date): FullDayVerdict {
+  const day = evaluateDay(date);
+  const monthPillar = getMonthPillar(date);
+  const { percent: monthPercent, canRole: monthCanRole } = pillarPercent(
+    monthPillar.can.element,
+    monthPillar.chi.name,
+    MONTH_CAN_WEIGHT,
+    MONTH_CHI_WEIGHT,
+  );
+  const baziYear = getBaziYearNumber(date);
+  const yearPillar = getYearPillar(baziYear);
+  const { percent: yearPercent, canRole: yearCanRole } = pillarPercent(
+    yearPillar.can.element,
+    yearPillar.chi.name,
+    YEAR_CAN_WEIGHT,
+    YEAR_CHI_WEIGHT,
+  );
+
+  const blended = day.percent * DAY_BLEND + monthPercent * MONTH_BLEND + yearPercent * YEAR_BLEND;
+  const percent = Math.max(0, Math.min(100, Math.round(blended)));
+  const { tier, label } = tierFromPercent(percent);
+
+  return {
+    date,
+    day,
+    monthPillar,
+    monthPercent,
+    monthCanRole,
+    yearPillar,
+    yearPercent,
+    yearCanRole,
+    baziYear,
+    percent,
+    tier,
+    tierLabel: label,
+    summary: day.summary,
+  };
 }
