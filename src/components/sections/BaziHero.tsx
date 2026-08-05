@@ -1,13 +1,13 @@
 import { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
 
-const BaziHero3D = lazy(() => import("../BaziHero3D").then((m) => ({ default: m.BaziHero3D })));
+
 
 export function BaziHero() {
   return (
     <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden flex items-start justify-center pt-32 sm:pt-40">
       <Suspense fallback={<div className="absolute inset-0 bg-cosmic" />}>
-        <BaziHero3D />
+        
       </Suspense>
 
       <div
