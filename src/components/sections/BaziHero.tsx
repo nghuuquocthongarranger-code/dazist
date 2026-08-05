@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export function BaziHero() {
   return (
-    <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden flex items-start justify-center pt-32 sm:pt-40">
+    <section className="relative h-[60svh] min-h-[400px] w-full overflow-hidden flex items-start justify-center pt-32 sm:pt-40">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
