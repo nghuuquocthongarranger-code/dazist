@@ -1,4 +1,4 @@
-import { evaluateDayFull, getBaziYearNumber, pillarPercent, CAN, CHI, type FullDayVerdict } from "./canChi";
+import { evaluateDayFull, getBaziYearNumber, pillarPercent, CAN, type FullDayVerdict } from "./canChi";
 import { computeWesternAstroScore, type WesternAstroResult } from "./westernAstro";
 import { computePersonalCycle, cycleScore, type PersonalCycle } from "./numerology";
 import { personalInfo, daiVan } from "../data/baziProfile";

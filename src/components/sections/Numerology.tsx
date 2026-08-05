@@ -22,12 +22,12 @@ export function NumerologyContent() {
             <div key={key}>
               <div className="flex items-center gap-3 mb-2">
                 <span className="shrink-0 grid place-items-center w-10 h-10 rounded-full border border-gold/40 bg-gold/10 font-display text-lg text-gold-soft">
-                  {core.value}
+                  {typeof core === 'object' ? core.value : core}
                 </span>
                 <div>
                   <p className="text-xs uppercase tracking-widest text-white/40">
-                    {core.label}
-                    {core.isMaster && <span className="text-gold-soft"> · Số Chủ</span>}
+                    {typeof core === 'object' ? core.label : ''}
+                    {typeof core === 'object' && core.isMaster && <span className="text-gold-soft"> · Số Chủ</span>}
                   </p>
                 </div>
               </div>

@@ -176,7 +176,7 @@ function CrystalBall({ reduced, onOpen }: { reduced: boolean; onOpen: () => void
   const glowTexture = useGlowTexture();
   useCursor(hovered);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (coreRef.current && !reduced) coreRef.current.rotation.y += delta * 0.1;
   });
 
