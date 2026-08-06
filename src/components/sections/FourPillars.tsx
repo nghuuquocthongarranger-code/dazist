@@ -20,7 +20,7 @@ export function FourPillarsContent() {
             </tr>
           </thead>
           <tbody>
-            {/* Hàng Thiên Can */}
+            {/* Hàng 1: Thiên Can */}
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thiên Can</td>
               {fourPillars.map((p) => (
@@ -33,7 +33,7 @@ export function FourPillarsContent() {
               ))}
             </tr>
 
-            {/* Hàng Thập Thần - NẰM DƯỚI THIÊN CAN */}
+            {/* Hàng 2: Thập Thần - NẰM DƯỚI THIÊN CAN */}
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thập Thần</td>
               {fourPillars.map((p) => (
@@ -45,7 +45,7 @@ export function FourPillarsContent() {
               ))}
             </tr>
 
-            {/* Hàng Địa Chi */}
+            {/* Hàng 3: Địa Chi */}
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Địa Chi</td>
               {fourPillars.map((p) => (
@@ -55,7 +55,7 @@ export function FourPillarsContent() {
               ))}
             </tr>
 
-            {/* Hàng Tàng Can */}
+            {/* Hàng 4: Tàng Can */}
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium">Tàng Can</td>
               {fourPillars.map((p) => (
