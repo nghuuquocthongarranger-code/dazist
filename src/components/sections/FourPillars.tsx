@@ -23,10 +23,11 @@ export function FourPillarsContent() {
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thiên Can</td>
               {fourPillars.map((p) => (
-                <td key={`can-${p.position}`} className="py-2 px-3 border-b border-white/5 text-center">
-                  <div className="flex flex-col items-center">
-                    <span className="text-white font-medium">{p.can}</span>
-                    <span className="text-xs text-white/50">({p.canNote})</span>
+                <td key={`can-${p.position}`} className="py-2 px-3 border-b border-white/5">
+                  {/* Dùng inline style để ép xuống dòng */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ display: 'block', fontWeight: 'bold', color: 'white' }}>{p.can}</span>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>({p.canNote})</span>
                   </div>
                 </td>
               ))}
@@ -58,10 +59,10 @@ export function FourPillarsContent() {
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium">Tàng Can</td>
               {fourPillars.map((p) => (
-                <td key={`tang-${p.position}`} className="py-2 px-3 text-center">
-                  <div className="flex flex-col items-center">
+                <td key={`tang-${p.position}`} className="py-2 px-3">
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                     {p.tangCan.map((t, i) => (
-                      <span key={i} className="text-xs text-white/60">
+                      <span key={i} style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>
                         {t.can} ({t.tenGod})
                       </span>
                     ))}
