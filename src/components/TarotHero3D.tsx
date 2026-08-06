@@ -5,9 +5,8 @@ import * as THREE from "three";
 
 const BALL_RADIUS = 0.95;
 
-// Phát hiện iOS và trình duyệt
+// Phát hiện iOS
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 function CrystalBall({ onOpen }: { onOpen: () => void }) {
   const [hovered, setHovered] = useState(false);
@@ -115,15 +114,10 @@ export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
             display: 'block'
           }}
         >
-          {/* Ánh sáng tối thiểu */}
           <ambientLight intensity={0.7} />
           <directionalLight position={[2, 3, 4]} intensity={0.8} />
           <directionalLight position={[-2, -1, 3]} intensity={0.3} color="#ffd700" />
-          
-          {/* Nội dung chính */}
           <CrystalBall onOpen={onOpen} />
-          
-          {/* Controls */}
           <OrbitControls 
             enableZoom={false} 
             enablePan={false} 
