@@ -1,342 +1,117 @@
-import { Suspense, useMemo, useRef, useState, useEffect } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Stars, Sparkles, Float, Billboard, MeshTransmissionMaterial, useCursor } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { Suspense, useRef, useState, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Stars, Float, useCursor } from "@react-three/drei";
 import * as THREE from "three";
 
 const BALL_RADIUS = 0.95;
 
-function usePrefersReducedMotion() {
-  return useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }, []);
-}
+// Phát hiện iOS
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-function useIsCoarsePointer() {
-  return useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(pointer: coarse)").matches;
-  }, []);
-}
-
-function useGlowTexture() {
-  return useMemo(() => {
-    const c = document.createElement("canvas");
-    c.width = 256;
-    c.height = 256;
-    const ctx = c.getContext("2d")!;
-    const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-    grad.addColorStop(0, "rgba(255,255,255,0.9)");
-    grad.addColorStop(0.35, "rgba(255,255,255,0.35)");
-    grad.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 256);
-    return new THREE.CanvasTexture(c);
-  }, []);
-}
-
-function Nebula() {
-  const texture = useMemo(() => {
-    const c = document.createElement("canvas");
-    c.width = 512;
-    c.height = 512;
-    const ctx = c.getContext("2d")!;
-    const grad = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-    grad.addColorStop(0, "rgba(150,70,220,0.32)");
-    grad.addColorStop(0.5, "rgba(80,40,150,0.14)");
-    grad.addColorStop(1, "rgba(10,8,20,0)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 512, 512);
-    return new THREE.CanvasTexture(c);
-  }, []);
-  return (
-    <>
-      <mesh position={[-11, 3, -22]}>
-        <planeGeometry args={[40, 40]} />
-        <meshBasicMaterial map={texture} transparent opacity={0.55} depthWrite={false} />
-      </mesh>
-      <mesh position={[13, -5, -26]} rotation={[0, 0, Math.PI / 3]}>
-        <planeGeometry args={[34, 34]} />
-        <meshBasicMaterial map={texture} transparent opacity={0.35} depthWrite={false} color="#d4af37" />
-      </mesh>
-    </>
-  );
-}
-
-function Pedestal({ reduced }: { reduced: boolean }) {
-  const woodMat = { color: "#2b1a12", roughness: 0.55, metalness: 0.15 } as const;
-  const goldMat = { color: "#d4af37", roughness: 0.3, metalness: 0.75, emissive: "#3a2a08", emissiveIntensity: 0.3 } as const;
-  const legAngles = [0, (Math.PI * 2) / 3, (Math.PI * 4) / 3];
-  const mistRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    if (mistRef.current && !reduced) {
-      mistRef.current.rotation.y = state.clock.getElapsedTime() * 0.08;
-    }
-  });
-
-  return (
-    <group position={[0, -BALL_RADIUS - 0.42, 0]}>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.16, 0]}>
-        <torusGeometry args={[BALL_RADIUS * 0.62, BALL_RADIUS * 0.1, 20, 48]} />
-        <meshStandardMaterial {...woodMat} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.21, 0]}>
-        <torusGeometry args={[BALL_RADIUS * 0.62, BALL_RADIUS * 0.02, 12, 48]} />
-        <meshStandardMaterial {...goldMat} />
-      </mesh>
-      <mesh position={[0, -0.05, 0]}>
-        <cylinderGeometry args={[BALL_RADIUS * 0.5, BALL_RADIUS * 0.34, 0.42, 32]} />
-        <meshStandardMaterial {...woodMat} />
-      </mesh>
-      <mesh position={[0, -0.27, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[BALL_RADIUS * 0.34, 0.018, 10, 32]} />
-        <meshStandardMaterial {...goldMat} />
-      </mesh>
-      <mesh position={[0, -0.34, 0]}>
-        <cylinderGeometry args={[BALL_RADIUS * 0.62, BALL_RADIUS * 0.7, 0.08, 32]} />
-        <meshStandardMaterial {...woodMat} />
-      </mesh>
-      {legAngles.map((a, i) => {
-        const x = Math.cos(a) * BALL_RADIUS * 0.5;
-        const z = Math.sin(a) * BALL_RADIUS * 0.5;
-        return (
-          <mesh key={i} position={[x, -0.5, z]} rotation={[0, 0, Math.PI]}>
-            <coneGeometry args={[0.06, 0.22, 10]} />
-            <meshStandardMaterial {...goldMat} />
-          </mesh>
-        );
-      })}
-      <group ref={mistRef}>
-        <Sparkles count={18} scale={[BALL_RADIUS * 1.8, 0.3, BALL_RADIUS * 1.8]} size={4} speed={reduced ? 0 : 0.12} color="#c9a6ff" noise={0.6} opacity={0.35} position={[0, -0.3, 0]} />
-      </group>
-    </group>
-  );
-}
-
-function useMagicCircleTexture() {
-  return useMemo(() => {
-    const size = 512;
-    const c = document.createElement("canvas");
-    c.width = size;
-    c.height = size;
-    const ctx = c.getContext("2d")!;
-    const cx = size / 2;
-    const cy = size / 2;
-    ctx.strokeStyle = "rgba(212,175,55,0.8)";
-    ctx.lineWidth = 2;
-    [230, 200, 150].forEach((r) => {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.stroke();
-    });
-    const points = 8;
-    for (let i = 0; i < points; i++) {
-      const a1 = (i / points) * Math.PI * 2;
-      const a2 = ((i + 3) / points) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(a1) * 200, cy + Math.sin(a1) * 200);
-      ctx.lineTo(cx + Math.cos(a2) * 200, cy + Math.sin(a2) * 200);
-      ctx.strokeStyle = "rgba(212,175,55,0.35)";
-      ctx.stroke();
-    }
-    for (let i = 0; i < points; i++) {
-      const a = (i / points) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.arc(cx + Math.cos(a) * 230, cy + Math.sin(a) * 230, 5, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(241,217,139,0.9)";
-      ctx.fill();
-    }
-    const tex = new THREE.CanvasTexture(c);
-    return tex;
-  }, []);
-}
-
-function MagicCircle({ radius, y, reduced }: { radius: number; y: number; reduced: boolean }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const texture = useMagicCircleTexture();
-  useFrame((_, delta) => {
-    if (ref.current && !reduced) ref.current.rotation.z += delta * 0.04;
-  });
-  return (
-    <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]}>
-      <circleGeometry args={[radius, 64]} />
-      <meshBasicMaterial map={texture} transparent opacity={0.55} depthWrite={false} blending={THREE.AdditiveBlending} />
-    </mesh>
-  );
-}
-
-function CrystalBall({
-  reduced,
-  isCoarsePointer,
-  onOpen,
-}: {
-  reduced: boolean;
-  isCoarsePointer: boolean;
-  onOpen: () => void;
-}) {
+function CrystalBall({ onOpen }: { onOpen: () => void }) {
   const [hovered, setHovered] = useState(false);
-  const coreRef = useRef<THREE.Group>(null);
-  const glowTexture = useGlowTexture();
+  const meshRef = useRef<THREE.Mesh>(null);
   useCursor(hovered);
 
-  useFrame((_state, delta) => {
-    if (coreRef.current && !reduced) coreRef.current.rotation.y += delta * 0.1;
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.005;
+      // Hiệu ứng glow nhẹ
+      const material = meshRef.current.material as THREE.MeshPhysicalMaterial;
+      if (material) {
+        material.emissiveIntensity = 0.2 + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      }
+    }
   });
 
   return (
-    <Float speed={reduced ? 0 : 1.2} rotationIntensity={0.15} floatIntensity={0.5}>
+    <Float speed={0.8} rotationIntensity={0.1} floatIntensity={0.3}>
       <group
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpen();
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-        }}
+        onClick={() => onOpen()}
+        onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
-        scale={hovered ? 1.04 : 1}
+        scale={hovered ? 1.05 : 1}
       >
-        <Billboard>
-          <mesh>
-            <planeGeometry args={[BALL_RADIUS * (hovered ? 3.4 : 2.9), BALL_RADIUS * (hovered ? 3.4 : 2.9)]} />
-            <meshBasicMaterial
-              map={glowTexture}
-              color="#ffffff"
-              transparent
-              opacity={hovered ? 0.55 : 0.4}
-              depthWrite={false}
-              blending={THREE.AdditiveBlending}
-            />
-          </mesh>
-        </Billboard>
-
-        <pointLight position={[0, 0, 0]} intensity={hovered ? 1.0 : 0.7} color="#f4f6ff" distance={8} decay={2.2} />
-        <pointLight position={[2.4, 2.6, 3.2]} intensity={0.5} color="#fff6d6" distance={16} decay={2} />
-
-        <group ref={coreRef}>
-          <Sparkles count={26} scale={BALL_RADIUS * 1.1} size={2} speed={reduced ? 0 : 0.18} color="#f1d98b" noise={0.25} opacity={0.5} />
-        </group>
-
-        <mesh>
-          <sphereGeometry args={[BALL_RADIUS, isCoarsePointer ? 48 : 96, isCoarsePointer ? 48 : 96]} />
-          {isCoarsePointer ? (
-            <meshPhysicalMaterial
-              color={hovered ? "#ffffff" : "#f2f3f8"}
-              transparent
-              opacity={0.85} // Tăng opacity để dễ thấy hơn
-              roughness={0.08}
-              metalness={0}
-              clearcoat={1}
-              clearcoatRoughness={0.08}
-              reflectivity={1}
-              envMapIntensity={1.2}
-            />
-          ) : (
-            <MeshTransmissionMaterial
-              thickness={1.7}
-              roughness={0.16}
-              transmission={1}
-              ior={1.45}
-              chromaticAberration={0.006}
-              anisotropicBlur={0.15}
-              distortion={0.06}
-              distortionScale={0.2}
-              temporalDistortion={reduced ? 0 : 0.03}
-              backside
-              color={hovered ? "#ffffff" : "#f2f3f8"}
-            />
-          )}
+        {/* Quả cầu chính */}
+        <mesh ref={meshRef}>
+          <sphereGeometry args={[BALL_RADIUS, 48, 48]} />
+          <meshPhysicalMaterial
+            color="#f2f3f8"
+            metalness={0.1}
+            roughness={0.15}
+            emissive="#ffd700"
+            emissiveIntensity={0.2}
+            transparent={true}
+            opacity={0.9}
+            clearcoat={0.3}
+            clearcoatRoughness={0.2}
+            envMapIntensity={0.5}
+          />
         </mesh>
 
-        <Pedestal reduced={reduced} />
-        <MagicCircle radius={BALL_RADIUS * 2.1} y={-BALL_RADIUS - 0.98} reduced={reduced} />
+        {/* Đế gỗ đơn giản */}
+        <group position={[0, -BALL_RADIUS - 0.3, 0]}>
+          <mesh>
+            <cylinderGeometry args={[BALL_RADIUS * 0.5, BALL_RADIUS * 0.3, 0.3, 16]} />
+            <meshStandardMaterial color="#2b1a12" roughness={0.7} />
+          </mesh>
+          <mesh position={[0, 0.15, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[BALL_RADIUS * 0.5, 0.04, 8, 24]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.5} roughness={0.3} />
+          </mesh>
+        </group>
+
+        {/* Vòng sáng bao quanh */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[BALL_RADIUS * 1.4, BALL_RADIUS * 1.5, 32]} />
+          <meshBasicMaterial color="#ffd700" transparent opacity={0.15} side={THREE.DoubleSide} />
+        </mesh>
       </group>
     </Float>
   );
 }
 
-function Scene({
-  reduced,
-  isCoarsePointer,
-  onOpen,
-}: {
-  reduced: boolean;
-  isCoarsePointer: boolean;
-  onOpen: () => void;
-}) {
-  // Force re-render khi resize
-  const { size } = useThree();
-  
-  useEffect(() => {
-    // Log để debug
-    console.log("Scene rendered - size:", size.width, size.height);
-    console.log("isCoarsePointer:", isCoarsePointer);
-  }, [size, isCoarsePointer]);
-
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <hemisphereLight args={["#8ea6d8", "#0b0a18", 0.45]} />
-      <Nebula />
-      <Stars radius={90} depth={50} count={4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.5} />
-      <group position={[0, -0.15, 0]}>
-        <CrystalBall reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
-      </group>
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        autoRotate={!reduced}
-        autoRotateSpeed={0.35}
-        minPolarAngle={Math.PI / 2.5}
-        maxPolarAngle={Math.PI / 1.8}
-      />
-      {/* TẮT HOÀN TOÀN BLOOM TRÊN MOBILE - nguyên nhân chính gây lỗi */}
-      {!reduced && !isCoarsePointer && (
-        <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.5} luminanceSmoothing={0.3} />
-        </EffectComposer>
-      )}
-    </>
-  );
-}
-
 export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
-  const reduced = usePrefersReducedMotion();
-  const isCoarsePointer = useIsCoarsePointer();
-  
-  // Thêm state để force re-render
+  // Force re-render khi resize
   const [key, setKey] = useState(0);
-  
+
   useEffect(() => {
-    const handleResize = () => {
-      setKey(prev => prev + 1);
-    };
+    const handleResize = () => setKey(prev => prev + 1);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
-    <div className="absolute inset-0" aria-hidden="false">
-      <Suspense fallback={null}>
+    <div className="absolute inset-0">
+      <Suspense fallback={
+        <div className="flex items-center justify-center h-full">
+          <div className="text-gold-500 text-xl">🔮 Đang tải...</div>
+        </div>
+      }>
         <Canvas
-          key={key} // Force re-render khi resize
-          camera={{ position: [0, 0.8, 8], fov: 40 }}
-          dpr={isCoarsePointer ? [1, 1.2] : [1, 1.75]} // Giảm dpr trên mobile
+          key={key}
+          camera={{ position: [0, 0.5, 7], fov: 45 }}
+          dpr={isIOS ? [0.5, 1] : [1, 1.5]} // iOS dùng DPR thấp
           gl={{ 
-            antialias: true,
+            antialias: false,
             alpha: true,
-            powerPreference: isCoarsePointer ? "default" : "high-performance"
+            powerPreference: "default"
           }}
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'block'
-          }}
+          style={{ width: '100%', height: '100%' }}
         >
-          <Scene reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
+          <ambientLight intensity={0.6} />
+          <pointLight position={[3, 4, 5]} intensity={0.8} />
+          <pointLight position={[-3, -2, 4]} intensity={0.4} color="#ffd700" />
+          <Stars radius={50} depth={30} count={1500} factor={2} saturation={0} fade speed={0.3} />
+          <CrystalBall onOpen={onOpen} />
+          <OrbitControls 
+            enableZoom={false} 
+            enablePan={false} 
+            autoRotate 
+            autoRotateSpeed={0.5}
+            minPolarAngle={Math.PI / 2.5}
+            maxPolarAngle={Math.PI / 1.8}
+          />
         </Canvas>
       </Suspense>
     </div>
