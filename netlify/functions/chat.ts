@@ -8,7 +8,7 @@ Chỉ dựa vào dữ liệu lá số được cung cấp trong bối cảnh bê
 Không đưa lời khuyên y tế, pháp lý hay tài chính mang tính quyết định — chỉ định hướng tham khảo.
 Trả lời ngắn gọn, súc tích (3-6 câu), trừ khi người dùng yêu cầu giải thích sâu hơn.`;
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -20,12 +20,12 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ error: "Method Not Allowed" }) };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Server chưa cấu hình GEMINI_API_KEY. Vào Netlify → Site settings → Environment variables để thêm.",
+        error: "Server chưa cấu hình GROQ_API_KEY. Vào Netlify → Site settings → Environment variables để thêm.",
       }),
     };
   }
@@ -45,36 +45,36 @@ export const handler: Handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "Hội thoại quá dài." }) };
   }
 
-  const systemInstructionText = context
+  const system = context
     ? `${BASE_SYSTEM_PROMPT}\n\n--- Bối cảnh lá số / lượt xem hiện tại ---\n${context}`
     : BASE_SYSTEM_PROMPT;
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemInstructionText }] },
-          contents: messages.map((m) => ({
-            role: m.role === "assistant" ? "model" : "user",
-            parts: [{ text: m.content }],
-          })),
-          generationConfig: { maxOutputTokens: 700 },
-        }),
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${apiKey}`,
       },
-    );
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        max_tokens: 700,
+        messages: [
+          { role: "system", content: system },
+          ...messages.map((m) => ({ role: m.role, content: m.content })),
+        ],
+      }),
+    });
 
     if (!res.ok) {
       const errText = await res.text();
-      return { statusCode: res.status, body: JSON.stringify({ error: `Lỗi từ Gemini API: ${errText}` }) };
+      return { statusCode: res.status, body: JSON.stringify({ error: `Lỗi từ Groq API: ${errText}` }) };
     }
 
     const data = (await res.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
+      choices?: { message?: { content?: string } }[];
     };
-    const reply = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+    const reply = data.choices?.[0]?.message?.content ?? "";
     return { statusCode: 200, body: JSON.stringify({ reply }) };
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: `Lỗi khi gọi AI: ${String(err)}` }) };
