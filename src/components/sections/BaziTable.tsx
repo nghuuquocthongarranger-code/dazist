@@ -31,7 +31,7 @@ const ELEMENT_COLOR: Record<string, string> = {
   thuy: "#22447a",
 };
 
-/* ──────── Modal dùng chung ──────── */
+/* ──────── Modal ──────── */
 function Modal({
   open,
   onClose,
@@ -97,10 +97,28 @@ function Section({
   );
 }
 
-/* ──────── Bảng Tứ Trụ 4 cột (hiển thị đầy đủ không popup) ──────── */
+/* ──────── Hồ sơ cá nhân (lên đầu) ──────── */
+function PersonalSection() {
+  return (
+    <Section title="Hồ sơ cá nhân" eyebrow="Thông tin">
+      <div className="space-y-2 text-sm">
+        <p><span className="text-gold-soft">Họ tên:</span> {personalInfo.name}</p>
+        <p><span className="text-gold-soft">Ngày sinh:</span> {personalInfo.birthDate}</p>
+        <p><span className="text-gold-soft">Giới tính:</span> {personalInfo.gender}</p>
+        <p><span className="text-gold-soft">Nạp Âm:</span> {personalInfo.napAm}</p>
+        <div className="mt-2 space-y-2">
+          {personalInfo.napAmDesc.map((d, i) => (
+            <p key={i} className="text-white/55 text-sm leading-relaxed">{d}</p>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ──────── Bảng Tứ Trụ đầy đủ ──────── */
 function PillarsTable() {
   const [selectedSao, setSelectedSao] = useState<string | null>(null);
-
   const saoData = selectedSao ? thanSatMeanings.find((s) => s.name === selectedSao) : null;
 
   return (
@@ -110,8 +128,6 @@ function PillarsTable() {
           Nhật Chủ: <span className="text-white font-semibold">{nhatChu.can}</span>{" "}
           <span className="text-white/40">({nhatChu.note})</span>
         </p>
-
-        {/* Bảng 4 cột */}
         <div className="overflow-x-auto">
           <table className="w-full text-xs sm:text-sm text-white/80">
             <thead>
@@ -123,7 +139,6 @@ function PillarsTable() {
               </tr>
             </thead>
             <tbody>
-              {/* Thiên Can */}
               <tr className="border-b border-white/5">
                 <td className="py-2 text-gold-soft font-semibold">Thiên Can</td>
                 {fourPillars.map((p) => (
@@ -133,21 +148,18 @@ function PillarsTable() {
                   </td>
                 ))}
               </tr>
-              {/* Địa Chi */}
               <tr className="border-b border-white/5">
                 <td className="py-2 text-gold-soft font-semibold">Địa Chi</td>
                 {fourPillars.map((p) => (
                   <td key={p.position} className="text-center py-2 font-display text-base sm:text-lg text-gold-soft">{p.chi}</td>
                 ))}
               </tr>
-              {/* Thập Thần */}
               <tr className="border-b border-white/5">
                 <td className="py-2 text-gold-soft font-semibold">Thập Thần</td>
                 {fourPillars.map((p) => (
                   <td key={p.position} className="text-center py-2 text-white/70">{p.canTenGod}</td>
                 ))}
               </tr>
-              {/* Can Tàng */}
               <tr className="border-b border-white/5">
                 <td className="py-2 text-gold-soft font-semibold align-top">Can Tàng</td>
                 {fourPillars.map((p) => (
@@ -160,7 +172,6 @@ function PillarsTable() {
                   </td>
                 ))}
               </tr>
-              {/* Thần Sát */}
               <tr>
                 <td className="py-2 text-gold-soft font-semibold align-top">Thần Sát</td>
                 {fourPillars.map((p) => {
@@ -194,53 +205,24 @@ function PillarsTable() {
         </div>
       </Section>
 
-      {/* Modal giải thích Thần Sát */}
-      <Modal open={!!saoData} onClose={() => setSelectedSao(null)} title={`Thần Sát: ${selectedSao}`}>
-        {saoData && (
+      {/* Modal Thần Sát */}
+      <Modal open={!!selectedSao} onClose={() => setSelectedSao(null)} title={`Thần Sát: ${selectedSao}`}>
+        {saoData ? (
           <div className="space-y-3 text-sm text-white/80">
-            <p>
-              <span className="text-gold-soft font-semibold">Tần suất:</span> {saoData.freq}
-            </p>
+            <p><span className="text-gold-soft font-semibold">Tần suất:</span> {saoData.freq}</p>
             <p>
               <span className="text-gold-soft font-semibold">Tính chất:</span>{" "}
-              <span
-                className={
-                  saoData.nature === "tot"
-                    ? "text-green-400"
-                    : saoData.nature === "xau"
-                    ? "text-red-400"
-                    : "text-yellow-400"
-                }
-              >
+              <span className={saoData.nature === "tot" ? "text-green-400" : saoData.nature === "xau" ? "text-red-400" : "text-yellow-400"}>
                 {saoData.nature === "tot" ? "Cát" : saoData.nature === "xau" ? "Hung" : "Trung tính"}
               </span>
             </p>
-            <p>
-              <span className="text-gold-soft font-semibold">Ý nghĩa:</span> {saoData.desc}
-            </p>
+            <p><span className="text-gold-soft font-semibold">Ý nghĩa:</span> {saoData.desc}</p>
           </div>
+        ) : (
+          <p className="text-white/50 text-sm">Thần Sát này chưa có dữ liệu chi tiết.</p>
         )}
       </Modal>
     </>
-  );
-}
-
-/* ──────── Hồ sơ ──────── */
-function PersonalSection() {
-  return (
-    <Section title="Hồ sơ cá nhân" eyebrow="Thông tin">
-      <div className="space-y-2 text-sm">
-        <p><span className="text-gold-soft">Họ tên:</span> {personalInfo.name}</p>
-        <p><span className="text-gold-soft">Ngày sinh:</span> {personalInfo.birthDate}</p>
-        <p><span className="text-gold-soft">Giới tính:</span> {personalInfo.gender}</p>
-        <p><span className="text-gold-soft">Nạp Âm:</span> {personalInfo.napAm}</p>
-        <div className="mt-2 space-y-2">
-          {personalInfo.napAmDesc.map((d, i) => (
-            <p key={i} className="text-white/55 text-sm leading-relaxed">{d}</p>
-          ))}
-        </div>
-      </div>
-    </Section>
   );
 }
 
@@ -426,8 +408,8 @@ export function BaziTable() {
   return (
     <section className="pb-20 sm:pb-28 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <PillarsTable />
         <PersonalSection />
+        <PillarsTable />
         <BodySection />
         <ElementsSection />
         <FamilySection />
