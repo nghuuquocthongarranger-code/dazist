@@ -1,19 +1,25 @@
-import { Suspense, useMemo, useRef, useState, useEffect } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Suspense, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Sparkles, Float, Billboard, MeshTransmissionMaterial, useCursor } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 const BALL_RADIUS = 0.95;
 
-// Phát hiện iOS và thiết bị cảm ứng
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-const isCoarsePointer = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+// Phát hiện thiết bị di động (điện thoại/tablet)
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 function usePrefersReducedMotion() {
   return useMemo(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+}
+
+function useIsCoarsePointer() {
+  return useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(pointer: coarse)").matches;
   }, []);
 }
 
@@ -166,9 +172,11 @@ function MagicCircle({ radius, y, reduced }: { radius: number; y: number; reduce
 
 function CrystalBall({
   reduced,
+  isCoarsePointer,
   onOpen,
 }: {
   reduced: boolean;
+  isCoarsePointer: boolean;
   onOpen: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -179,9 +187,6 @@ function CrystalBall({
   useFrame((_state, delta) => {
     if (coreRef.current && !reduced) coreRef.current.rotation.y += delta * 0.1;
   });
-
-  // iOS/coarse pointer dùng material đơn giản nhưng vẫn giữ hiệu ứng
-  const useSimpleMaterial = isIOS || isCoarsePointer;
 
   return (
     <Float speed={reduced ? 0 : 1.2} rotationIntensity={0.15} floatIntensity={0.5}>
@@ -204,27 +209,27 @@ function CrystalBall({
               map={glowTexture}
               color="#ffffff"
               transparent
-              opacity={hovered ? 0.55 : 0.4}
+              opacity={isMobile ? (hovered ? 0.8 : 0.6) : (hovered ? 0.55 : 0.4)}
               depthWrite={false}
               blending={THREE.AdditiveBlending}
             />
           </mesh>
         </Billboard>
 
-        <pointLight position={[0, 0, 0]} intensity={hovered ? 1.0 : 0.7} color="#f4f6ff" distance={8} decay={2.2} />
-        <pointLight position={[2.4, 2.6, 3.2]} intensity={0.5} color="#fff6d6" distance={16} decay={2} />
+        <pointLight position={[0, 0, 0]} intensity={isMobile ? 1.5 : 0.7} color="#f4f6ff" distance={8} decay={2.2} />
+        <pointLight position={[2.4, 2.6, 3.2]} intensity={isMobile ? 1.0 : 0.5} color="#fff6d6" distance={16} decay={2} />
 
         <group ref={coreRef}>
           <Sparkles count={26} scale={BALL_RADIUS * 1.1} size={2} speed={reduced ? 0 : 0.18} color="#f1d98b" noise={0.25} opacity={0.5} />
         </group>
 
         <mesh>
-          <sphereGeometry args={[BALL_RADIUS, useSimpleMaterial ? 48 : 96, useSimpleMaterial ? 48 : 96]} />
-          {useSimpleMaterial ? (
+          <sphereGeometry args={[BALL_RADIUS, isCoarsePointer ? 48 : 96, isCoarsePointer ? 48 : 96]} />
+          {isCoarsePointer ? (
             <meshPhysicalMaterial
               color={hovered ? "#ffffff" : "#f2f3f8"}
               transparent
-              opacity={0.85}
+              opacity={isMobile ? 0.95 : 0.75}
               roughness={0.08}
               metalness={0}
               clearcoat={1}
@@ -258,22 +263,21 @@ function CrystalBall({
 
 function Scene({
   reduced,
+  isCoarsePointer,
   onOpen,
 }: {
   reduced: boolean;
+  isCoarsePointer: boolean;
   onOpen: () => void;
 }) {
-  // iOS không dùng Bloom để tránh lỗi
-  const useBloom = !isIOS && !isCoarsePointer;
-
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <hemisphereLight args={["#8ea6d8", "#0b0a18", 0.45]} />
+      <ambientLight intensity={isMobile ? 0.8 : 0.5} />
+      <hemisphereLight args={["#8ea6d8", "#0b0a18", isMobile ? 0.6 : 0.45]} />
       <Nebula />
-      <Stars radius={90} depth={50} count={isIOS ? 2000 : 4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.5} />
+      <Stars radius={90} depth={50} count={isMobile ? 2000 : 4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.5} />
       <group position={[0, -0.15, 0]}>
-        <CrystalBall reduced={reduced} onOpen={onOpen} />
+        <CrystalBall reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
       </group>
       <OrbitControls
         enableZoom={false}
@@ -283,7 +287,7 @@ function Scene({
         minPolarAngle={Math.PI / 2.5}
         maxPolarAngle={Math.PI / 1.8}
       />
-      {useBloom && !reduced && (
+      {!reduced && !isCoarsePointer && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.5} luminanceSmoothing={0.3} />
         </EffectComposer>
@@ -294,34 +298,16 @@ function Scene({
 
 export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
   const reduced = usePrefersReducedMotion();
-  const [key, setKey] = useState(0);
-
-  useEffect(() => {
-    const handleResize = () => setKey(prev => prev + 1);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+  const isCoarsePointer = useIsCoarsePointer();
   return (
     <div className="absolute inset-0" aria-hidden="false">
       <Suspense fallback={null}>
         <Canvas
-          key={key}
           camera={{ position: [0, 0.8, 8], fov: 40 }}
-          dpr={isIOS || isCoarsePointer ? [0.5, 1.2] : [1, 1.75]}
-          gl={{ 
-            antialias: !isIOS,
-            alpha: true,
-            powerPreference: isIOS ? "low-power" : "high-performance",
-            failIfMajorPerformanceCaveat: false
-          }}
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'block'
-          }}
+          dpr={isCoarsePointer ? [1, 1.5] : [1, 1.75]}
+          gl={{ antialias: true }}
         >
-          <Scene reduced={reduced} onOpen={onOpen} />
+          <Scene reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
         </Canvas>
       </Suspense>
     </div>
