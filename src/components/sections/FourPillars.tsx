@@ -23,10 +23,9 @@ export function FourPillarsContent() {
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thiên Can</td>
               {fourPillars.map((p) => (
-                <td key={`can-${p.position}`} className="py-2 px-3 border-b border-white/5">
-                  <div>
+                <td key={`can-${p.position}`} className="py-2 px-3 border-b border-white/5 text-center">
+                  <div className="flex flex-col items-center">
                     <span className="text-white font-medium">{p.can}</span>
-                    <br />
                     <span className="text-xs text-white/50">({p.canNote})</span>
                   </div>
                 </td>
@@ -37,7 +36,7 @@ export function FourPillarsContent() {
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thập Thần</td>
               {fourPillars.map((p) => (
-                <td key={`god-${p.position}`} className="py-2 px-3 border-b border-white/5">
+                <td key={`god-${p.position}`} className="py-2 px-3 border-b border-white/5 text-center">
                   <span className="text-amber-400/80 font-medium">
                     {p.position === "Ngày" ? "Nhật Chủ" : p.canTenGod}
                   </span>
@@ -49,7 +48,7 @@ export function FourPillarsContent() {
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Địa Chi</td>
               {fourPillars.map((p) => (
-                <td key={`chi-${p.position}`} className="py-2 px-3 border-b border-white/5">
+                <td key={`chi-${p.position}`} className="py-2 px-3 border-b border-white/5 text-center">
                   <span className="text-white font-medium">{p.chi}</span>
                 </td>
               ))}
@@ -59,10 +58,10 @@ export function FourPillarsContent() {
             <tr>
               <td className="py-2 px-3 text-gold-soft font-medium">Tàng Can</td>
               {fourPillars.map((p) => (
-                <td key={`tang-${p.position}`} className="py-2 px-3">
-                  <div>
+                <td key={`tang-${p.position}`} className="py-2 px-3 text-center">
+                  <div className="flex flex-col items-center">
                     {p.tangCan.map((t, i) => (
-                      <span key={i} className="text-xs text-white/60 block">
+                      <span key={i} className="text-xs text-white/60">
                         {t.can} ({t.tenGod})
                       </span>
                     ))}
