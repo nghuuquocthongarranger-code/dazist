@@ -9,52 +9,81 @@ export function FourPillarsContent() {
         Nhật Chủ: {nhatChu.can} — {nhatChu.note}. Điểm đặc biệt nhất của lá số: ba trụ Thìn liên tiếp ở Tháng – Ngày – Giờ.
       </p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {fourPillars.map((p) => (
-          <div
-            key={p.position}
-            className={`rounded-xl bg-black/20 border p-4 ${p.position === "Ngày" ? "border-gold/50" : "border-white/5"}`}
-          >
-            <p className="text-xs uppercase tracking-widest text-white/40 mb-4">Trụ {p.position}</p>
-            <div className="flex flex-col gap-3 mb-5">
-              <CanBadge name={p.can} size="lg" />
-              <ChiBadge name={p.chi} size="lg" />
-            </div>
-            <p className="text-xs text-gold-soft mb-3">{p.position === "Ngày" ? "Nhật Chủ" : p.canTenGod}</p>
-            <div className="border-t border-white/10 pt-3">
-              <p className="text-[11px] text-white/40 uppercase tracking-wider mb-2">Tàng Can</p>
-              <ul className="space-y-1.5 text-sm text-white/70">
-                {p.tangCan.map((t) => (
-                  <li key={t.can} className="flex justify-between gap-2">
-                    <span>{t.can}</span>
-                    <span className="text-white/45">{t.tenGod}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        ))}
+      {/* Bảng Tứ Trụ */}
+      <div className="overflow-x-auto mb-8">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="text-left py-2 px-3 text-gold-soft border-b border-white/10">Trụ</th>
+              <th className="text-left py-2 px-3 text-gold-soft border-b border-white/10">Năm</th>
+              <th className="text-left py-2 px-3 text-gold-soft border-b border-white/10">Tháng</th>
+              <th className="text-left py-2 px-3 text-gold-soft border-b border-white/10">Ngày</th>
+              <th className="text-left py-2 px-3 text-gold-soft border-b border-white/10">Giờ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Hàng Thiên Can */}
+            <tr>
+              <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thiên Can</td>
+              {fourPillars.map((p) => (
+                <td key={`can-${p.position}`} className="py-2 px-3 border-b border-white/5">
+                  <div className="flex flex-col">
+                    <span className="text-white font-medium">{p.can}</span>
+                    <span className="text-xs text-white/50">{p.canNote}</span>
+                  </div>
+                </td>
+              ))}
+            </tr>
+
+            {/* Hàng Thập Thần - NẰM DƯỚI THIÊN CAN */}
+            <tr>
+              <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Thập Thần</td>
+              {fourPillars.map((p) => (
+                <td key={`god-${p.position}`} className="py-2 px-3 border-b border-white/5">
+                  <span className="text-amber-400/80 font-medium">
+                    {p.position === "Ngày" ? "Nhật Chủ" : p.canTenGod}
+                  </span>
+                </td>
+              ))}
+            </tr>
+
+            {/* Hàng Địa Chi */}
+            <tr>
+              <td className="py-2 px-3 text-gold-soft font-medium border-b border-white/5">Địa Chi</td>
+              {fourPillars.map((p) => (
+                <td key={`chi-${p.position}`} className="py-2 px-3 border-b border-white/5">
+                  <span className="text-white font-medium">{p.chi}</span>
+                </td>
+              ))}
+            </tr>
+
+            {/* Hàng Tàng Can */}
+            <tr>
+              <td className="py-2 px-3 text-gold-soft font-medium">Tàng Can</td>
+              {fourPillars.map((p) => (
+                <td key={`tang-${p.position}`} className="py-2 px-3">
+                  <div className="flex flex-col gap-0.5">
+                    {p.tangCan.map((t, i) => (
+                      <span key={i} className="text-xs text-white/60">
+                        {t.can} ({t.tenGod})
+                      </span>
+                    ))}
+                  </div>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div className="rounded-xl bg-black/20 border border-white/5 p-4 sm:p-5">
-        <p className="text-xs uppercase tracking-widest text-white/40 mb-6">
-          Tỉ lệ 10 Thập Thần (theo trọng số Can gốc + Tàng Can)
-        </p>
-        <div className="space-y-3">
-          {tenGodRatios.map((g, i) => (
-            <div key={g.name} className="flex items-center gap-4">
-              <span className="w-24 sm:w-28 text-sm text-white/70 shrink-0">{g.name}</span>
-              <div className="flex-1 h-2.5 rounded-full bg-white/5 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${g.percent}%` }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.9, delay: i * 0.05, ease: "easeOut" }}
-                  className="h-full rounded-full"
-                  style={{ background: "linear-gradient(90deg, #d4af37, #f1d98b)" }}
-                />
-              </div>
-              <span className="w-14 text-right text-sm text-gold-soft tabular-nums">{g.percent}%</span>
+      {/* Tỷ lệ Thập Thần */}
+      <div className="mt-6">
+        <h4 className="text-gold-soft font-medium mb-3">Tỷ lệ 10 Thập Thần toàn cục</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+          {tenGodRatios.map((item) => (
+            <div key={item.name} className="bg-white/5 rounded-lg p-3 text-center">
+              <div className="text-white/70 text-sm">{item.name}</div>
+              <div className="text-amber-400 font-bold text-lg">{item.percent}%</div>
             </div>
           ))}
         </div>
