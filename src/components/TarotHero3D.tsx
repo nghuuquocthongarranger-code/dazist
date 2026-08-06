@@ -13,6 +13,16 @@ function usePrefersReducedMotion() {
   }, []);
 }
 
+/** Thiết bị cảm ứng (điện thoại/tablet) — GPU thường không kham nổi kỹ thuật multi-pass
+ * (render-to-texture khúc xạ + backside) của MeshTransmissionMaterial, dễ gây lỗi hình ảnh
+ * (đen/trắng xoá/vỡ hình). Dùng chất liệu thủy tinh nhẹ hơn cho các thiết bị này. */
+function useIsCoarsePointer() {
+  return useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(pointer: coarse)").matches;
+  }, []);
+}
+
 function useGlowTexture() {
   return useMemo(() => {
     const c = document.createElement("canvas");
@@ -174,6 +184,7 @@ function CrystalBall({ reduced, onOpen }: { reduced: boolean; onOpen: () => void
   const [hovered, setHovered] = useState(false);
   const coreRef = useRef<THREE.Group>(null);
   const glowTexture = useGlowTexture();
+  const isCoarsePointer = useIsCoarsePointer();
   useCursor(hovered);
 
   useFrame((_state, delta) => {
@@ -209,34 +220,42 @@ function CrystalBall({ reduced, onOpen }: { reduced: boolean; onOpen: () => void
           </mesh>
         </Billboard>
 
-        <pointLight position={[0, 0, 0]} intensity={hovered ? 3.2 : 2.2} color="#f4f6ff" distance={10} decay={1.6} />
-        <pointLight position={[1.5, 1.8, 2]} intensity={1.2} color="#fff6d6" distance={14} decay={1.8} />
+        <pointLight position={[0, 0, 0]} intensity={hovered ? 1.0 : 0.7} color="#f4f6ff" distance={8} decay={2.2} />
+        <pointLight position={[2.4, 2.6, 3.2]} intensity={0.5} color="#fff6d6" distance={16} decay={2} />
 
         <group ref={coreRef}>
           <Sparkles count={26} scale={BALL_RADIUS * 1.1} size={2} speed={reduced ? 0 : 0.18} color="#f1d98b" noise={0.25} opacity={0.5} />
         </group>
 
         <mesh>
-          <sphereGeometry args={[BALL_RADIUS, 96, 96]} />
-          <MeshTransmissionMaterial
-            thickness={1.7}
-            roughness={0.16}
-            transmission={1}
-            ior={1.45}
-            chromaticAberration={0.006}
-            anisotropicBlur={0.15}
-            distortion={0.06}
-            distortionScale={0.2}
-            temporalDistortion={reduced ? 0 : 0.03}
-            backside
-            color={hovered ? "#ffffff" : "#f2f3f8"}
-          />
-        </mesh>
-
-        {/* Điểm phản chiếu sáng nhỏ — highlight đặc trưng của bề mặt thủy tinh/pha lê thật */}
-        <mesh position={[-BALL_RADIUS * 0.42, BALL_RADIUS * 0.5, BALL_RADIUS * 0.72]}>
-          <sphereGeometry args={[0.14, 12, 12]} />
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.85} />
+          <sphereGeometry args={[BALL_RADIUS, isCoarsePointer ? 48 : 96, isCoarsePointer ? 48 : 96]} />
+          {isCoarsePointer ? (
+            <meshPhysicalMaterial
+              color={hovered ? "#ffffff" : "#f2f3f8"}
+              transparent
+              opacity={0.42}
+              roughness={0.08}
+              metalness={0}
+              clearcoat={1}
+              clearcoatRoughness={0.08}
+              reflectivity={1}
+              envMapIntensity={1.2}
+            />
+          ) : (
+            <MeshTransmissionMaterial
+              thickness={1.7}
+              roughness={0.16}
+              transmission={1}
+              ior={1.45}
+              chromaticAberration={0.006}
+              anisotropicBlur={0.15}
+              distortion={0.06}
+              distortionScale={0.2}
+              temporalDistortion={reduced ? 0 : 0.03}
+              backside
+              color={hovered ? "#ffffff" : "#f2f3f8"}
+            />
+          )}
         </mesh>
 
         <Pedestal reduced={reduced} />
@@ -266,7 +285,7 @@ function Scene({ reduced, onOpen }: { reduced: boolean; onOpen: () => void }) {
       />
       {!reduced && (
         <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={0.6} luminanceThreshold={0.3} luminanceSmoothing={0.3} />
+          <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.5} luminanceSmoothing={0.3} />
         </EffectComposer>
       )}
     </>

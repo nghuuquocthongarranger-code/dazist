@@ -4,6 +4,7 @@ const SOURCE_LABEL: Record<Source, string> = {
   bazi: "Bát Tự",
   western: "Chiêm tinh",
   numerology: "Thần số học",
+  tuvi: "Tử Vi",
   both: "Bát Tự + Chiêm tinh",
   all: "Cả 3 hệ thống",
 };
@@ -12,6 +13,7 @@ const SOURCE_CLASS: Record<Source, string> = {
   bazi: "border-gold/40 text-gold-soft bg-gold/10",
   western: "border-thuy/40 text-thuy bg-thuy/10",
   numerology: "border-hoa/40 text-hoa bg-hoa/10",
+  tuvi: "border-kim/40 text-kim bg-kim/10",
   both: "border-moc/40 text-moc bg-moc/10",
   all: "border-gold text-gold-soft bg-gold/25 font-semibold shadow-[0_0_10px_-2px_rgba(212,175,55,0.7)]",
 };

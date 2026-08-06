@@ -1,11 +1,8 @@
 import { evaluateDayFull, getBaziYearNumber, pillarPercent, CAN, type FullDayVerdict } from "./canChi";
 import { computeWesternAstroScore, type WesternAstroResult } from "./westernAstro";
-import { computePersonalCycle, cycleScore, type PersonalCycle } from "./numerology";
-import { personalInfo, daiVan } from "../data/baziProfile";
+import { getTuViYearPercent, getTuViColumnPercent } from "./tuViScore";
+import { daiVan } from "../data/baziProfile";
 import type { DungHyKy } from "./elements";
-
-// "05/05/2001 (Dương lịch)" — bóc ngày/tháng sinh dùng cho chu kỳ cá nhân thần số học.
-const [BIRTH_DAY, BIRTH_MONTH] = personalInfo.birthDate.split(" ")[0].split("/").map(Number);
 
 export interface DaiVanPeriod {
   ganChi: string;
@@ -34,26 +31,25 @@ export interface ColumnScore {
   combined: number;
   bazi: number;
   western: number;
-  numerology: number;
-  diverges: boolean;
+  tuVi: number;
 }
 
 export interface DayScoreBundle {
   date: Date;
   bazi: FullDayVerdict;
   western: WesternAstroResult;
-  cycle: PersonalCycle;
+  westernMonth: WesternAstroResult;
+  westernYear: WesternAstroResult;
+  tuViPercent: number;
   daiVan: DaiVanPeriod | null;
   day: ColumnScore;
   month: ColumnScore;
   year: ColumnScore;
 }
 
-function combine(label: string, bazi: number, western: number, numerology: number): ColumnScore {
-  const combined = Math.round((bazi + western + numerology) / 3);
-  const vals = [bazi, western, numerology];
-  const diverges = Math.max(...vals) - Math.min(...vals) > 35;
-  return { label, combined, bazi, western, numerology, diverges };
+function combine(label: string, bazi: number, western: number, tuVi: number): ColumnScore {
+  const combined = Math.round((bazi + western + tuVi) / 3);
+  return { label, combined, bazi, western, tuVi };
 }
 
 function blend(parts: { percent: number; weight: number }[]): number {
@@ -63,16 +59,27 @@ function blend(parts: { percent: number; weight: number }[]): number {
 }
 
 /**
- * Tổng hợp điểm 3 hệ thống (Bát Tự + Chiêm tinh Tây phương + Thần số học) theo 3 mốc thời gian: Ngày, Tháng, Năm.
+ * Tổng hợp điểm 3 hệ thống (Bát Tự + Chiêm tinh Tây phương + Tử Vi) theo 3 mốc thời gian: Ngày, Tháng, Năm.
  * Phần Bát Tự của mỗi mốc hòa trộn nhiều tầng thời gian theo đúng cách luận Bát Tự truyền thống:
  *  - Ngày: Đại Vận + Lưu Niên (Trụ Năm) + Trụ Tháng (tiết khí thực) + Trụ Ngày.
  *  - Tháng: Đại Vận + Lưu Niên + Trụ Tháng (tiết khí thực).
  *  - Năm: Đại Vận + Lưu Niên (Trụ Năm).
+ * Phần Tử Vi hoà trộn cung Đại Vận (theo tuổi) + cung Lưu Niên (theo Chi năm dương lịch), trọng số Đại Vận
+ * tăng dần Ngày → Tháng → Năm (giống cách Bát Tự tăng trọng số Đại Vận cho mốc thời gian càng dài) — xem lib/tuViScore.ts.
+ *
+ * Phần Chiêm Tinh: cột Ngày dùng transit đúng ngày đang xem; cột Tháng/Năm KHÔNG được đổi theo từng ngày —
+ * dùng transit tại một mốc cố định (đầu tháng / đầu năm dương lịch chứa ngày đang xem) để điểm hai cột này
+ * chỉ thay đổi khi thực sự sang tháng/năm khác, không nhảy số mỗi lần bấm lùi/tiến 1 ngày.
  */
 export function computeDayScoreBundle(date: Date): DayScoreBundle {
   const bazi = evaluateDayFull(date);
   const western = computeWesternAstroScore(date);
-  const cycle = computePersonalCycle(BIRTH_DAY, BIRTH_MONTH, date);
+  const westernMonth = computeWesternAstroScore(new Date(date.getFullYear(), date.getMonth(), 1));
+  const westernYear = computeWesternAstroScore(new Date(date.getFullYear(), 0, 1));
+  const tuViPercent = getTuViYearPercent(date.getFullYear());
+  const tuViDayPercent = getTuViColumnPercent(date.getFullYear(), 0.15);
+  const tuViMonthPercent = getTuViColumnPercent(date.getFullYear(), 0.3);
+  const tuViYearPercent = getTuViColumnPercent(date.getFullYear(), 0.5);
   const daiVanPeriod = getDaiVanForYear(getBaziYearNumber(date));
   const daiVanPercent = daiVanPeriod?.percent ?? 50;
 
@@ -92,9 +99,9 @@ export function computeDayScoreBundle(date: Date): DayScoreBundle {
     { percent: daiVanPercent, weight: 0.4 },
   ]);
 
-  const day = combine("Ngày", dayBazi, western.percent, cycleScore(cycle.day));
-  const month = combine("Tháng", monthBazi, western.percent, cycleScore(cycle.month));
-  const year = combine("Năm", yearBazi, western.percent, cycleScore(cycle.year));
+  const day = combine("Ngày", dayBazi, western.percent, tuViDayPercent);
+  const month = combine("Tháng", monthBazi, westernMonth.percent, tuViMonthPercent);
+  const year = combine("Năm", yearBazi, westernYear.percent, tuViYearPercent);
 
-  return { date, bazi, western, cycle, daiVan: daiVanPeriod, day, month, year };
+  return { date, bazi, western, westernMonth, westernYear, tuViPercent, daiVan: daiVanPeriod, day, month, year };
 }

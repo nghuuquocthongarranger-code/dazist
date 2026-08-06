@@ -1,4 +1,4 @@
-export type Source = "bazi" | "western" | "numerology" | "both" | "all";
+export type Source = "bazi" | "western" | "numerology" | "tuvi" | "both" | "all";
 
 export interface SwItem {
   text: string;
@@ -42,6 +42,14 @@ export const strengths: SwItem[] = [
     text: "Số Ngày Sinh 5 mang tài lẻ thích nghi nhanh, bổ trợ tốt cho nền tảng ổn định của Số Chủ Đạo, giúp không quá cứng nhắc.",
     source: "numerology",
   },
+  {
+    text: "Cung Quan Lộc có Thiên Cơ vượng — trí tuệ linh hoạt, giỏi mưu tính, thích nghi nhanh trong công việc, phù hợp vai trò tư duy/cố vấn.",
+    source: "tuvi",
+  },
+  {
+    text: "Cung Phụ Mẫu (Vũ Khúc, Thiên Tướng đều miếu vượng) và Tử Tức (Liêm Trinh miếu, Thiên Phủ vượng) — nền tảng gia đình và quan hệ với con cái đều vững chắc, hai chiều trên dưới thuận hòa.",
+    source: "tuvi",
+  },
 ];
 
 export const weaknesses: SwItem[] = [
@@ -76,5 +84,13 @@ export const weaknesses: SwItem[] = [
   {
     text: "Bài Học Nghiệp Quả thiếu số 4 (chưa quen kỷ luật/tổ chức) và số 9 (chưa quen buông bỏ vì lợi ích chung) — cần chủ động rèn luyện thay vì chờ tự nhiên có được.",
     source: "numerology",
+  },
+  {
+    text: "Cung Mệnh (Thiên Đồng, Cự Môn đều hãm) — nội tâm nhạy cảm, dễ lo xa/đa nghi, đường đời giai đoạn đầu phải tự thân vận động, chật vật hơn để khẳng định bản thân.",
+    source: "tuvi",
+  },
+  {
+    text: "Cung Tật Ách có Phá Quân hãm — sức khoẻ/thói quen sinh hoạt dễ biến động thất thường, cần tránh làm việc quá sức và giữ nhịp độ điều hoà.",
+    source: "tuvi",
   },
 ];

@@ -9,24 +9,35 @@ export function SummaryContent() {
         {convergentThemes.map((t) => (
           <div key={t.title} className="rounded-xl bg-black/20 border border-gold/20 p-4 sm:p-5">
             <p className="font-display text-base text-gradient-gold font-semibold mb-3">{t.title}</p>
-            <p className="text-xs text-white/45 mb-1.5">
-              <span className="text-gold-soft">Bát Tự:</span> {t.bazi}
-            </p>
-            <p className="text-xs text-white/45 mb-1.5">
-              <span className="text-thuy">Chiêm tinh:</span> {t.western}
-            </p>
-            <p className="text-xs text-white/45 mb-3">
-              <span className="text-gold-soft">Thần số học:</span> {t.numerology}
-            </p>
+            {t.bazi && (
+              <p className="text-xs text-white/45 mb-1.5">
+                <span className="text-gold-soft">Bát Tự:</span> {t.bazi}
+              </p>
+            )}
+            {t.western && (
+              <p className="text-xs text-white/45 mb-1.5">
+                <span className="text-thuy">Chiêm tinh:</span> {t.western}
+              </p>
+            )}
+            {t.numerology && (
+              <p className="text-xs text-white/45 mb-1.5">
+                <span className="text-gold-soft">Thần số học:</span> {t.numerology}
+              </p>
+            )}
+            {t.tuVi && (
+              <p className="text-xs text-white/45 mb-3">
+                <span className="text-hoa">Tử Vi:</span> {t.tuVi}
+              </p>
+            )}
             <p className="text-white/75 text-sm leading-relaxed text-left">{t.synthesis}</p>
           </div>
         ))}
       </div>
 
       <p className="text-center text-white/50 text-sm mt-8 leading-relaxed">
-        Khi ba hệ thống độc lập — Bát Tự và Chiêm tinh học (hình thành ở phương Đông và phương Tây) cùng Thần số học
-        (dựa trên toán học biểu tượng) — cùng chỉ về một chủ đề, đó là tín hiệu đáng cân nhắc nghiêm túc hơn so với
-        khi chỉ một hệ thống đơn lẻ nêu ra.
+        Khi nhiều hệ thống độc lập — Bát Tự và Tử Vi (Can Chi phương Đông, hai lối tính khác nhau), Chiêm tinh học
+        (phương Tây) và Thần số học (toán học biểu tượng) — cùng chỉ về một chủ đề, đó là tín hiệu đáng cân nhắc
+        nghiêm túc hơn so với khi chỉ một hệ thống đơn lẻ nêu ra.
       </p>
     </div>
   );

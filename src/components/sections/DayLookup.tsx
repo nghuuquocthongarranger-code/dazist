@@ -4,7 +4,8 @@ import { tierFromPercent, getHiddenStems, type HiddenStemDetail } from "../../li
 import { formatDegInSign, type WesternAstroResult } from "../../lib/westernAstro";
 import { evaluateActivity, type ActivityVerdict } from "../../lib/activityAdvisor";
 import { computeDayScoreBundle, type ColumnScore, type DayScoreBundle } from "../../lib/dayScore";
-import { CYCLE_NUMBER_MEANING } from "../../lib/numerology";
+import { getLuuNienPalace } from "../../lib/tuViScore";
+import { TRUONG_SINH_TONE } from "../../data/tuViProfile";
 import { CanBadge, ChiBadge } from "../CanChiBadge";
 import { SectionHeading } from "../GlassCard";
 import { ReadingModal } from "../ReadingModal";
@@ -129,9 +130,9 @@ function westernAdvice(western: WesternAstroResult): { tone: "warn" | "info" | "
 
 type ColumnKey = "day" | "month" | "year";
 const COLUMNS: { key: ColumnKey; label: string; hint: string }[] = [
-  { key: "day", label: "Ngày", hint: "Đại Vận + Lưu Niên + Trụ Tháng + Trụ Ngày + transit hôm nay + số ngày cá nhân" },
-  { key: "month", label: "Tháng", hint: "Đại Vận + Lưu Niên + Trụ Tháng (tiết khí thực) + số tháng cá nhân" },
-  { key: "year", label: "Năm", hint: "Đại Vận + Lưu Niên (Trụ Năm, ranh giới Lập Xuân) + số năm cá nhân" },
+  { key: "day", label: "Ngày", hint: "Đại Vận + Lưu Niên + Trụ Tháng + Trụ Ngày + transit hôm nay" },
+  { key: "month", label: "Tháng", hint: "Đại Vận + Lưu Niên + Trụ Tháng (tiết khí thực)" },
+  { key: "year", label: "Năm", hint: "Đại Vận + Lưu Niên (Trụ Năm, ranh giới Lập Xuân)" },
 ];
 
 function ColumnCard({ col, hint, onOpen }: { col: ColumnScore; hint: string; onOpen: () => void }) {
@@ -147,7 +148,6 @@ function ColumnCard({ col, hint, onOpen }: { col: ColumnScore; hint: string; onO
       <p className="text-xs uppercase tracking-wider text-white/40 mb-3">{col.label}</p>
       <PercentGauge percent={col.combined} color={style.hex} size="sm" />
       <p className={`mt-3 font-display text-sm font-semibold ${style.text}`}>{tier.label}</p>
-      {col.diverges && <p className="text-[10px] text-hoa mt-1">⚠ 3 hệ thống trái chiều</p>}
       <span className="text-[11px] text-gold-soft/70 mt-2 inline-block">Xem chi tiết →</span>
     </button>
   );
@@ -271,10 +271,18 @@ function BaziBlock({ columnKey, bundle }: { columnKey: ColumnKey; bundle: DaySco
   );
 }
 
-function WesternBlock({ western, advice }: { western: WesternAstroResult; advice: ReturnType<typeof westernAdvice> }) {
+function WesternBlock({
+  western,
+  advice,
+  label,
+}: {
+  western: WesternAstroResult;
+  advice: ReturnType<typeof westernAdvice>;
+  label: string;
+}) {
   return (
     <div className="rounded-2xl p-5 bg-white/5 border border-white/10">
-      <p className="text-xs uppercase tracking-wider text-white/40 mb-3">Chiêm tinh — transit của ngày đang xem</p>
+      <p className="text-xs uppercase tracking-wider text-white/40 mb-3">Chiêm tinh — {label}</p>
       <p className="text-sm text-white/70 mb-1">☽ Mặt Trăng: {formatDegInSign(western.moon.lon)}</p>
       <p className="text-sm text-white/70 mb-3">☉ Mặt Trời: {formatDegInSign(western.sun.lon)}</p>
       {advice.length > 0 ? (
@@ -295,25 +303,65 @@ function WesternBlock({ western, advice }: { western: WesternAstroResult; advice
   );
 }
 
-const CYCLE_LABEL: Record<ColumnKey, string> = {
-  day: "Số ngày cá nhân",
-  month: "Số tháng cá nhân",
-  year: "Số năm cá nhân",
+function TuViBlock({ year }: { year: number }) {
+  const palace = getLuuNienPalace(year);
+  if (!palace) return null;
+  const tone = TRUONG_SINH_TONE[palace.truongSinh];
+  return (
+    <div className="rounded-2xl p-5 bg-white/5 border border-white/10">
+      <p className="text-xs uppercase tracking-wider text-white/40 mb-3">Tử Vi — cung Lưu Niên {year}</p>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <span className="font-display text-gold-soft text-base">
+          {palace.chi} · {palace.cungName}
+        </span>
+        <span
+          className={`text-xs rounded-full border px-2.5 py-1 ${
+            tone === "tot" ? "border-moc/40 text-moc" : tone === "xau" ? "border-hoa/40 text-hoa" : "border-white/20 text-white/60"
+          }`}
+        >
+          {palace.truongSinh}
+        </span>
+        {palace.trietTuan && (
+          <span className="text-xs rounded-full border border-hoa/40 text-hoa px-2.5 py-1">{palace.trietTuan}</span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {palace.mainStars.length > 0 ? (
+          palace.mainStars.map((s) => (
+            <span key={s.name} className="text-xs rounded-full bg-gold/10 border border-gold/25 text-gold-soft px-2.5 py-1">
+              {s.name}
+              {s.state ? ` (${s.state})` : ""}
+            </span>
+          ))
+        ) : (
+          <span className="text-xs rounded-full bg-white/5 border border-white/10 text-white/40 px-2.5 py-1">Vô chính diệu</span>
+        )}
+      </div>
+      <p className="text-white/70 text-sm leading-relaxed">{palace.summary}</p>
+    </div>
+  );
+}
+
+const WESTERN_ANCHOR: Record<ColumnKey, { pick: (b: DayScoreBundle) => WesternAstroResult; label: string }> = {
+  day: { pick: (b) => b.western, label: "transit của ngày đang xem" },
+  month: { pick: (b) => b.westernMonth, label: "transit đầu tháng (cố định trong tháng)" },
+  year: { pick: (b) => b.westernYear, label: "transit đầu năm (cố định trong năm)" },
 };
 
 function ColumnDetailModal({
   columnKey,
   bundle,
-  advice,
   onClose,
 }: {
   columnKey: ColumnKey;
   bundle: DayScoreBundle;
-  advice: ReturnType<typeof westernAdvice>;
   onClose: () => void;
 }) {
   const col = bundle[columnKey];
   const meta = COLUMNS.find((c) => c.key === columnKey)!;
+  const anchor = WESTERN_ANCHOR[columnKey];
+  const western = anchor.pick(bundle);
+  const advice = westernAdvice(western);
 
   return (
     <ReadingModal eyebrow="Chi tiết" title={`Cột ${meta.label}`} subtitle={meta.hint} onClose={onClose}>
@@ -321,30 +369,14 @@ function ColumnDetailModal({
         <div className="grid grid-cols-3 gap-3">
           <SystemMiniScore label="Bát Tự" percent={col.bazi} />
           <SystemMiniScore label="Chiêm tinh" percent={col.western} />
-          <SystemMiniScore label="Thần số học" percent={col.numerology} />
+          <SystemMiniScore label="Tử Vi" percent={col.tuVi} />
         </div>
 
         <BaziBlock columnKey={columnKey} bundle={bundle} />
-        <WesternBlock western={bundle.western} advice={advice} />
-        <NumerologyCycleBlock label={CYCLE_LABEL[columnKey]} value={bundle.cycle[columnKey]} />
+        <WesternBlock western={western} advice={advice} label={anchor.label} />
+        <TuViBlock year={bundle.date.getFullYear()} />
       </div>
     </ReadingModal>
-  );
-}
-
-function NumerologyCycleBlock({ label, value }: { label: string; value: number }) {
-  const meaning = CYCLE_NUMBER_MEANING[value];
-  return (
-    <div className="rounded-2xl p-5 bg-white/5 border border-white/10">
-      <p className="text-xs uppercase tracking-wider text-white/40 mb-3">Thần số học — {label}</p>
-      <div className="flex items-center gap-3 mb-3">
-        <span className="shrink-0 grid place-items-center w-10 h-10 rounded-full border border-gold/40 bg-gold/10 font-display text-lg text-gold-soft">
-          {value}
-        </span>
-        <p className="font-display text-base text-gold-soft">{meaning?.label ?? ""}</p>
-      </div>
-      <p className="text-white/70 text-sm leading-relaxed">{meaning?.advice ?? ""}</p>
-    </div>
   );
 }
 
@@ -362,7 +394,6 @@ export function DayLookup() {
   const today = toISODate(new Date());
   const overallTier = bundle ? tierFromPercent(bundle.day.combined) : null;
   const overallStyle = overallTier ? TIER_STYLE[overallTier.tier] : TIER_STYLE["binh-thuong"];
-  const advice = bundle ? westernAdvice(bundle.western) : [];
 
   const activityVerdict = useMemo(() => {
     if (!bundle || !activityInput.trim()) return null;
@@ -376,7 +407,7 @@ export function DayLookup() {
         <SectionHeading
           eyebrow="Công cụ cá nhân hóa"
           title="Hôm nay là ngày tốt hay xấu?"
-          subtitle="Tổng hợp 3 hệ thống độc lập: Bát Tự (Dụng/Hỷ/Kỵ Thần + tiết khí), Chiêm tinh học Tây phương (transit) và Thần số học (chu kỳ cá nhân)."
+          subtitle="Tổng hợp 3 hệ thống độc lập: Bát Tự (Dụng/Hỷ/Kỵ Thần + tiết khí), Chiêm tinh học Tây phương (transit) và Tử Vi (cung Lưu Niên)."
         />
 
         <div className="glass glass-gold-edge rounded-3xl p-6 sm:p-10">
@@ -439,13 +470,6 @@ export function DayLookup() {
                     </div>
                     <PercentGauge percent={bundle.day.combined} color={overallStyle.hex} />
                   </div>
-
-                  {bundle.day.diverges && (
-                    <p className="mt-4 text-sm text-hoa bg-hoa/10 border border-hoa/30 rounded-xl px-4 py-3">
-                      ⚠ Ba hệ thống có tín hiệu khá trái chiều cho ngày này — nên cân nhắc kỹ trước khi quyết định
-                      việc quan trọng.
-                    </p>
-                  )}
                 </div>
 
                 {/* 4 cột Ngày / Tuần / Tháng / Năm */}
@@ -502,8 +526,8 @@ export function DayLookup() {
                 </div>
 
                 <p className="text-xs text-white/35 leading-relaxed text-center px-4">
-                  Điểm số là tổng hợp tham khảo từ ba hệ thống chiêm tinh/số học độc lập (Bát Tự, Chiêm tinh học Tây
-                  phương & Thần số học), mang tính định hướng, không phải khẳng định tuyệt đối.
+                  Điểm số là tổng hợp tham khảo từ ba hệ thống chiêm tinh/mệnh lý độc lập (Bát Tự, Chiêm tinh học Tây
+                  phương & Tử Vi), mang tính định hướng, không phải khẳng định tuyệt đối.
                 </p>
               </motion.div>
             )}
@@ -512,7 +536,7 @@ export function DayLookup() {
       </div>
 
       {detailKey && bundle && (
-        <ColumnDetailModal columnKey={detailKey} bundle={bundle} advice={advice} onClose={() => setDetailKey(null)} />
+        <ColumnDetailModal columnKey={detailKey} bundle={bundle} onClose={() => setDetailKey(null)} />
       )}
     </section>
   );

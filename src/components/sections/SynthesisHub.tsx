@@ -7,16 +7,16 @@ import { SummaryContent } from "./Summary";
 const TOPICS = [
   {
     key: "sw",
-    eyebrow: "Tổng hợp Bát Tự · Chiêm tinh · Thần số học",
+    eyebrow: "Tổng hợp Bát Tự · Chiêm tinh · Thần số học · Tử Vi",
     title: "Điểm mạnh — Điểm yếu",
-    teaser: "Gộp chung tín hiệu từ cả 3 hệ thống — Bát Tự, Chiêm tinh Tây phương và Thần số học — đánh dấu rõ nguồn.",
+    teaser: "Gộp chung tín hiệu từ cả 4 hệ thống — Bát Tự, Chiêm tinh Tây phương, Thần số học và Tử Vi — đánh dấu rõ nguồn.",
     Content: StrengthsWeaknessesContent,
   },
   {
     key: "summary",
     eyebrow: "XIV. Tổng kết",
-    title: "Điểm hội tụ giữa Bát Tự · Chiêm tinh · Thần số học",
-    teaser: "Những chủ đề mà cả 3 hệ thống độc lập cùng chỉ ra — tín hiệu đáng tin cậy nhất của lá số.",
+    title: "Điểm hội tụ giữa Bát Tự · Chiêm tinh · Thần số học · Tử Vi",
+    teaser: "Những chủ đề mà nhiều hệ thống độc lập cùng chỉ ra — tín hiệu đáng tin cậy nhất của lá số.",
     Content: SummaryContent,
   },
 ];

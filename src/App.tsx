@@ -8,6 +8,7 @@ import { WesternPage } from "./pages/WesternPage";
 import { NumerologyPage } from "./pages/NumerologyPage";
 import { TarotPage } from "./pages/TarotPage";
 import { TarotLookupPage } from "./pages/TarotLookupPage";
+import { TuViPage } from "./pages/TuViPage";
 import { SynthesisPage } from "./pages/SynthesisPage";
 import { Footer } from "./components/sections/Summary";
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="/than-so-hoc" element={<NumerologyPage />} />
             <Route path="/tarot" element={<TarotPage />} />
             <Route path="/tarot/tra-soat" element={<TarotLookupPage />} />
+            <Route path="/tu-vi" element={<TuViPage />} />
             <Route path="/tong-hop" element={<SynthesisPage />} />
           </Routes>
         </main>

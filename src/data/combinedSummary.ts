@@ -1,11 +1,12 @@
 export const combinedSummaryIntro =
-  "Ba hệ thống dưới đây hình thành độc lập với nhau — Bát Tự từ lịch Can Chi phương Đông, Chiêm tinh học từ vị trí hành tinh phương Tây, Thần số học từ toán học biểu tượng của họ tên và ngày sinh — nên không hề \"vay mượn\" ý tưởng của nhau. Khi cả ba cùng chỉ về một chủ đề, đó là tín hiệu đáng tin cậy hơn hẳn so với khi chỉ một hệ thống đơn lẻ nêu ra.";
+  "Bốn hệ thống dưới đây hình thành độc lập với nhau — Bát Tự và Tử Vi từ lịch Can Chi phương Đông (nhưng theo hai lối tính hoàn toàn khác nhau), Chiêm tinh học từ vị trí hành tinh phương Tây, Thần số học từ toán học biểu tượng của họ tên và ngày sinh — nên không hề \"vay mượn\" ý tưởng của nhau. Khi nhiều hệ thống cùng chỉ về một chủ đề, đó là tín hiệu đáng tin cậy hơn hẳn so với khi chỉ một hệ thống đơn lẻ nêu ra.";
 
 export interface ConvergentTheme {
   title: string;
-  bazi: string;
-  western: string;
-  numerology: string;
+  bazi?: string;
+  western?: string;
+  numerology?: string;
+  tuVi?: string;
   synthesis: string;
 }
 
@@ -15,8 +16,9 @@ export const convergentThemes: ConvergentTheme[] = [
     bazi: "Tam Thìn Tự Hình (Tháng–Ngày–Giờ) — tự tạo áp lực cho chính mình, lặp đi lặp lại theo thời gian thay vì một biến cố dứt điểm.",
     western: "Mặt Trời quincunx Diêm Vương (150°, gần như chính xác tuyệt đối) — bản sắc liên tục phải điều chỉnh trước biến động từ bên ngoài lẫn bên trong.",
     numerology: "Nợ Nghiệp Quả 13/4 xuất hiện ngay trong Số Chủ Đạo — theo đúng nghĩa gốc, đây là con số chỉ bài học về kỷ luật và trách nhiệm bị trì hoãn, phải trả dần qua nhiều lần thay vì một lần.",
+    tuVi: "Cung Mệnh (Thiên Đồng, Cự Môn hãm) đang ở trạng thái \"Tử\" trong Vòng Trường Sinh — đúng nghĩa là \"điểm chững lại, mọi việc có xu hướng dừng, cần tĩnh tâm nhìn lại\", không phải một dòng chảy liên tục.",
     synthesis:
-      "Đây là chủ đề trùng khớp rõ nhất trong cả ba lá số: không hệ thống nào mô tả một biến cố dứt điểm, mà đều chỉ ra một chu kỳ tự tạo căng thẳng lặp lại suốt đời, gắn chặt với việc thiếu kỷ luật/tổ chức ở đâu đó trong quá khứ. Bài học chung: thay đổi thật sự đến từ việc chủ động xây dựng kỷ luật, không phải chờ áp lực tự hết.",
+      "Đây là chủ đề trùng khớp rõ nhất — không hệ thống nào mô tả một biến cố dứt điểm, mà cả bốn đều chỉ ra một chu kỳ tự tạo căng thẳng/chững lại lặp đi lặp lại suốt đời, gắn chặt với việc thiếu kỷ luật/tổ chức ở đâu đó trong quá khứ. Bài học chung: thay đổi thật sự đến từ việc chủ động xây dựng kỷ luật, không phải chờ áp lực tự hết.",
   },
   {
     title: "Năng lực dẫn dắt có thật nhưng không tự động bộc lộ",
@@ -39,7 +41,15 @@ export const convergentThemes: ConvergentTheme[] = [
     bazi: "Thủy (Hỷ Thần) là Tài Tinh — khả năng tạo/thu hút tiền tốt nhất qua kênh lưu động, giao thương, hợp tác.",
     western: "Kim Tinh ở Nhà 11 (bạn bè/cộng đồng) và Nút Bắc ở Nhà 2 (Tài Bạch) — giá trị bản thân và tài chính phát triển qua mạng lưới xã hội và việc tự nuôi dưỡng nội lực.",
     numerology: "Đường Tinh Thần (7-8-9) trong bảng đồ số hoàn toàn trống — không có sẵn bản năng tích trữ/vật chất đơn thuần; Số Trưởng Thành 8 (thành tựu vật chất) chỉ trở nên rõ nét từ trung niên, nghĩa là của cải không phải điểm khởi đầu tự nhiên.",
+    tuVi: "Cung Thân đóng tại Tài Bạch (vô chính diệu, có Lộc Tồn) — trọng tâm cả đời nghiêng hẳn về tài chính, và Tử Vi miếu địa tại Nô Bộc cho thấy nguồn lực đó gắn chặt với bạn bè/đối tác có vị thế chứ không phải tự thân tích luỹ đơn độc.",
     synthesis:
-      "Cả ba hệ thống đều không ủng hộ việc chôn vốn tĩnh hay làm việc đơn độc vì tiền — dòng chảy tài chính thuận nhất khi gắn với kết nối, chuyên môn thực chất và cộng đồng xung quanh, và bản thân xu hướng tích lũy vật chất cũng chỉ chín muồi dần theo thời gian chứ không phải bản năng có sẵn từ đầu.",
+      "Cả bốn hệ thống đều không ủng hộ việc chôn vốn tĩnh hay làm việc đơn độc vì tiền — dòng chảy tài chính thuận nhất khi gắn với kết nối, chuyên môn thực chất và cộng đồng xung quanh, và bản thân xu hướng tích lũy vật chất cũng chỉ chín muồi dần theo thời gian chứ không phải bản năng có sẵn từ đầu.",
+  },
+  {
+    title: "Sự nghiệp là nơi phát huy thế mạnh rõ rệt nhất",
+    bazi: "Thương Quan/Thực Thần dùng tài lẻ, khả năng diễn đạt và sáng tạo để tiết chế bớt sự bảo thủ của Thân vượng.",
+    tuVi: "Cung Quan Lộc có Thiên Cơ vượng (trí tuệ linh hoạt, giỏi mưu tính, thích nghi) — một trong số ít cung chính tinh vượng địa của cả lá số, lại nằm đúng vào tam hợp với Mệnh và Tài Bạch.",
+    synthesis:
+      "Bát Tự và Tử Vi — hai hệ thống Đông phương hình thành theo hai lối tính hoàn toàn khác nhau — cùng chỉ ra sự nghiệp/công việc trí óc là nơi năng lực được phát huy rõ ràng nhất, rõ hơn hẳn so với các mảng đời sống khác của lá số.",
   },
 ];

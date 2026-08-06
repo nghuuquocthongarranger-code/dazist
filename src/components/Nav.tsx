@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { to: "/chiem-tinh", label: "Chiêm Tinh" },
   { to: "/than-so-hoc", label: "Thần Số Học" },
   { to: "/tarot", label: "Tarot" },
+  { to: "/tu-vi", label: "Tử Vi" },
   { to: "/tong-hop", label: "Tổng Hợp" },
 ];
 
