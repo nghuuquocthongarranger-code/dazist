@@ -21,6 +21,7 @@ import {
   summary,
   tenGodRatios,
   tamThinTuHinh,
+  luuNienByDaiVan,
 } from "../../data/baziProfile";
 
 const ELEMENT_COLOR: Record<string, string> = {
@@ -58,7 +59,7 @@ function Modal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="glass glass-gold-edge rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
+            className="glass glass-gold-edge rounded-2xl p-6 max-w-3xl w-full max-h-[85vh] overflow-y-auto"
           >
             <h3 className="font-display text-xl text-gradient-gold mb-4">{title}</h3>
             {children}
@@ -205,7 +206,6 @@ function PillarsTable() {
         </div>
       </Section>
 
-      {/* Modal Thần Sát */}
       <Modal open={!!selectedSao} onClose={() => setSelectedSao(null)} title={`Thần Sát: ${selectedSao}`}>
         {saoData ? (
           <div className="space-y-3 text-sm text-white/80">
@@ -354,37 +354,85 @@ function WealthCareerSection() {
   );
 }
 
-/* ──────── Đại Vận ──────── */
+/* ──────── Đại Vận & Lưu Niên ──────── */
 function DaiVanSection() {
+  const [selectedDV, setSelectedDV] = useState<string | null>(null);
+  const luuNien = selectedDV ? luuNienByDaiVan[selectedDV] : null;
+
   return (
-    <Section title="Đại Vận" eyebrow="Hành trình 10 năm một chặng">
-      <p className="text-xs text-white/50 mb-4">{daiVanMeta}</p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs text-white/70">
-          <thead>
-            <tr className="text-gold-soft">
-              <th className="text-left pb-2">#</th>
-              <th className="text-left pb-2">Can Chi</th>
-              <th className="text-left pb-2">Bắt đầu</th>
-              <th className="text-left pb-2">Tuổi</th>
-              <th className="text-left pb-2">Thập Thần</th>
-            </tr>
-          </thead>
-          <tbody>
-            {daiVan.map((dv, i) => (
-              <tr key={i} className="border-t border-white/5">
-                <td className="py-2">{i + 1}</td>
-                <td className={`py-2 font-semibold ${dv.favorable ? "text-green-400" : "text-red-400"}`}>{dv.ganChi}</td>
-                <td className="py-2">{dv.start}</td>
-                <td className="py-2">{dv.age}t</td>
-                <td className="py-2">{dv.tenGod}</td>
+    <>
+      <Section title="Đại Vận" eyebrow="Hành trình 10 năm một chặng">
+        <p className="text-xs text-white/50 mb-4">{daiVanMeta}</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs text-white/70">
+            <thead>
+              <tr className="text-gold-soft">
+                <th className="text-left pb-2">#</th>
+                <th className="text-left pb-2">Can Chi</th>
+                <th className="text-left pb-2">Bắt đầu</th>
+                <th className="text-left pb-2">Tuổi</th>
+                <th className="text-left pb-2">Thập Thần</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-xs text-white/50 mt-3 italic">{daiVanNote}</p>
-    </Section>
+            </thead>
+            <tbody>
+              {daiVan.map((dv, i) => (
+                <tr
+                  key={i}
+                  onClick={() => setSelectedDV(dv.ganChi)}
+                  className="border-t border-white/5 cursor-pointer hover:bg-white/5 transition"
+                >
+                  <td className="py-2">{i + 1}</td>
+                  <td className={`py-2 font-semibold ${dv.favorable ? "text-green-400" : "text-red-400"}`}>
+                    {dv.ganChi}
+                  </td>
+                  <td className="py-2">{dv.start}</td>
+                  <td className="py-2">{dv.age}t</td>
+                  <td className="py-2">{dv.tenGod}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-white/50 mt-3 italic">{daiVanNote}</p>
+      </Section>
+
+      <Modal
+        open={!!selectedDV}
+        onClose={() => setSelectedDV(null)}
+        title={`Lưu Niên — Đại Vận ${selectedDV}`}
+      >
+        {luuNien && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-white/70">
+              <thead>
+                <tr className="text-gold-soft">
+                  <th className="text-left pb-2">Năm</th>
+                  <th className="text-left pb-2">Can Chi</th>
+                  <th className="text-left pb-2">Tình cảm</th>
+                  <th className="text-left pb-2">Tiền bạc</th>
+                  <th className="text-left pb-2">Công việc</th>
+                  <th className="text-left pb-2">Gia đình</th>
+                  <th className="text-left pb-2">Sức khỏe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {luuNien.map((ln, i) => (
+                  <tr key={i} className="border-t border-white/5">
+                    <td className="py-2">{ln.nam}</td>
+                    <td className="py-2 text-gold-soft">{ln.canChi}</td>
+                    <td className="py-2 text-white/60 max-w-[120px] truncate" title={ln.tinhCam}>{ln.tinhCam}</td>
+                    <td className="py-2 text-white/60 max-w-[120px] truncate" title={ln.tienBac}>{ln.tienBac}</td>
+                    <td className="py-2 text-white/60 max-w-[120px] truncate" title={ln.congViec}>{ln.congViec}</td>
+                    <td className="py-2 text-white/60 max-w-[120px] truncate" title={ln.giaDinh}>{ln.giaDinh}</td>
+                    <td className="py-2 text-white/60 max-w-[120px] truncate" title={ln.sucKhoe}>{ln.sucKhoe}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal>
+    </>
   );
 }
 
