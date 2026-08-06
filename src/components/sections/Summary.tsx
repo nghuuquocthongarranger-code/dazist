@@ -48,7 +48,7 @@ export function Footer() {
     <footer className="py-10 px-6 border-t border-white/10 text-center">
       <p className="font-display text-gradient-gold text-lg mb-1">DaZiST</p>
       <p className="text-white/35 text-xs">
-        Tổng hợp Bát Tự, Chiêm tinh học Tây phương và Tarot — nội dung mang tính tham khảo văn hóa - chiêm tinh, không
+        Tổng hợp Bát Tự, Tử Vi, Chiêm tinh học Tây phương và Tarot — nội dung mang tính tham khảo văn hóa - chiêm tinh, không
         thay thế lời khuyên chuyên môn.
       </p>
     </footer>
