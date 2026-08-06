@@ -4,14 +4,14 @@ export interface ChatMessage {
 }
 
 /**
- * Gọi hàm serverless Netlify (netlify/functions/chat.ts) — API key AI được giữ ở server (biến môi trường),
- * không bao giờ lộ ra trình duyệt. Chỉ hoạt động khi chạy qua Netlify (netlify dev hoặc bản đã deploy);
- * chạy bằng "vite dev" thường sẽ không có route /.netlify/functions/* nên sẽ báo lỗi rõ ràng bên dưới.
+ * Gọi Vercel Serverless Function (api/chat.ts) — API key AI được giữ ở server (biến môi trường),
+ * không bao giờ lộ ra trình duyệt. Chỉ hoạt động khi chạy qua Vercel (vercel dev hoặc bản đã deploy);
+ * chạy bằng "vite dev" thường sẽ không có route /api/* nên sẽ báo lỗi rõ ràng bên dưới.
  */
 export async function sendChatMessage(messages: ChatMessage[], context: string): Promise<string> {
   let res: Response;
   try {
-    res = await fetch("/.netlify/functions/chat", {
+    res = await fetch("/api/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ messages, context }),
@@ -23,7 +23,7 @@ export async function sendChatMessage(messages: ChatMessage[], context: string):
   if (!res.ok) {
     if (res.status === 404) {
       throw new Error(
-        'Chatbot chưa hoạt động ở môi trường này — cần chạy qua Netlify ("netlify dev" hoặc bản đã deploy), không phải "npm run dev" thông thường.',
+        'Chatbot chưa hoạt động ở môi trường này — cần chạy qua Vercel ("vercel dev" hoặc bản đã deploy), không phải "npm run dev" thông thường.',
       );
     }
     let errMsg = "Không thể kết nối tới trợ lý AI.";

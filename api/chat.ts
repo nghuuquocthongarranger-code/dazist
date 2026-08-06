@@ -1,4 +1,4 @@
-import type { Handler } from "@netlify/functions";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 /** Bối cảnh hệ thống dùng chung cho mọi cuộc hội thoại — đặt "vai" cho AI, kèm bối cảnh riêng của từng
  * trang (điểm ngày/tháng/năm hoặc lá bài Tarot vừa rút) được nối thêm phía sau khi gọi từ client. */
@@ -15,34 +15,30 @@ interface ChatMessage {
   content: string;
 }
 
-export const handler: Handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: JSON.stringify({ error: "Method Not Allowed" }) };
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method Not Allowed" });
+    return;
   }
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "Server chưa cấu hình GROQ_API_KEY. Vào Netlify → Site settings → Environment variables để thêm.",
-      }),
-    };
+    res.status(500).json({
+      error: "Server chưa cấu hình GROQ_API_KEY. Vào Vercel → Project Settings → Environment Variables để thêm.",
+    });
+    return;
   }
 
-  let payload: { messages?: ChatMessage[]; context?: string };
-  try {
-    payload = JSON.parse(event.body || "{}");
-  } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: "Body không hợp lệ." }) };
-  }
-
+  const payload = (req.body ?? {}) as { messages?: ChatMessage[]; context?: string };
   const { messages, context } = payload;
+
   if (!Array.isArray(messages) || messages.length === 0) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Thiếu messages." }) };
+    res.status(400).json({ error: "Thiếu messages." });
+    return;
   }
   if (messages.length > 40) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Hội thoại quá dài." }) };
+    res.status(400).json({ error: "Hội thoại quá dài." });
+    return;
   }
 
   const system = context
@@ -50,7 +46,7 @@ export const handler: Handler = async (event) => {
     : BASE_SYSTEM_PROMPT;
 
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -66,17 +62,18 @@ export const handler: Handler = async (event) => {
       }),
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      return { statusCode: res.status, body: JSON.stringify({ error: `Lỗi từ Groq API: ${errText}` }) };
+    if (!groqRes.ok) {
+      const errText = await groqRes.text();
+      res.status(groqRes.status).json({ error: `Lỗi từ Groq API: ${errText}` });
+      return;
     }
 
-    const data = (await res.json()) as {
+    const data = (await groqRes.json()) as {
       choices?: { message?: { content?: string } }[];
     };
     const reply = data.choices?.[0]?.message?.content ?? "";
-    return { statusCode: 200, body: JSON.stringify({ reply }) };
+    res.status(200).json({ reply });
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: `Lỗi khi gọi AI: ${String(err)}` }) };
+    res.status(500).json({ error: `Lỗi khi gọi AI: ${String(err)}` });
   }
-};
+}
