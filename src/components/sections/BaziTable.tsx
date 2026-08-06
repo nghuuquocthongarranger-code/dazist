@@ -237,7 +237,7 @@ function PillarsTable() {
                         const meaning = thanSatMeanings.find((m) => m.name === sao);
                         const color = meaning?.nature === "tot" ? "text-green-400" : meaning?.nature === "xau" ? "text-red-400" : "text-yellow-400";
                         return (
-                          <button key={i} onClick={() => setSelectedSao(sao)} className={`block w-full text-left text-[10px] sm:text-xs leading-relaxed hover:underline ${color}`}>
+                          <button key={i} onClick={() => setSelectedSao(sao)} className={`block w-full text-center text-[10px] sm:text-xs leading-relaxed hover:underline ${color}`}>
                             {sao}
                           </button>
                         );
