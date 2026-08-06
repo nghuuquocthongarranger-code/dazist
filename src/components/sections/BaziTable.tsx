@@ -16,8 +16,6 @@ import {
   thanSatByPillar,
   thanSatMeanings,
   daiVan,
-  daiVanNote,
-  daiVanMeta,
   summary,
   tenGodRatios,
   tamThinTuHinh,
