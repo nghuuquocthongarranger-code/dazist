@@ -157,7 +157,7 @@ function PillarsTable() {
           <span className="text-white/40">({nhatChu.note})</span>
         </p>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs sm:text-sm text-white/80">
+          <table className="w-full table-fixed text-xs sm:text-sm text-white/80">
             <thead>
               <tr className="text-gold-soft border-b border-gold/20">
                 <th className="text-left py-2 pr-3 w-[16%]"></th>
