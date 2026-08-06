@@ -228,11 +228,10 @@ function scoreToPercent(score: number): number {
 }
 
 export function tierFromPercent(percent: number): { tier: DayVerdict["tier"]; label: string } {
-  if (percent >= 80) return { tier: "rat-tot", label: "Rất tốt" };
-  if (percent >= 60) return { tier: "tot", label: "Tốt" };
-  if (percent >= 40) return { tier: "binh-thuong", label: "Bình thường" };
-  if (percent >= 20) return { tier: "xau", label: "Xấu" };
-  return { tier: "rat-xau", label: "Rất xấu" };
+  if (percent >= 70) return { tier: "rat-tot", label: "Rất tốt" };
+  if (percent >= 50) return { tier: "tot", label: "Tốt" };
+  if (percent >= 30) return { tier: "binh-thuong", label: "Bình thường" };
+  return { tier: "xau", label: "Xấu" };
 }
 
 /**

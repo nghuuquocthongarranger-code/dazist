@@ -7,10 +7,27 @@ import { TarotSynthesisCard } from "./TarotSynthesisCard";
 import { TAROT_SPREADS, type TarotSpread } from "../../data/tarotSpreads";
 import { TAROT_DECK, type TarotCard } from "../../data/tarotDeck";
 import { shuffle, type DrawnCard } from "../../lib/tarot";
-import { synthesizeReading } from "../../lib/tarotSynthesis";
+import { synthesizeReading, type ReadingSynthesis } from "../../lib/tarotSynthesis";
+import { ChatPanel } from "../ChatPanel";
 
 interface Props {
   onClose: () => void;
+}
+
+/** Tóm tắt trải bài + luận giải thành văn bản gửi kèm cho AI, để AI trả lời bám sát đúng các lá đã rút. */
+function buildTarotChatContext(spread: TarotSpread, results: DrawnCard[], synthesis: ReadingSynthesis): string {
+  const cardLines = results.map((r, i) => {
+    const pos = spread.positions[i];
+    const meaning = r.reversed ? r.card.reversed : r.card.upright;
+    return `- ${pos?.label ?? `Lá ${i + 1}`}: ${r.card.name}${r.reversed ? " (Ngược)" : ""} — ${meaning}`;
+  });
+  return [
+    `Kiểu trải bài: ${spread.name} (${spread.cardCount} lá).`,
+    `Các lá đã rút:\n${cardLines.join("\n")}`,
+    `Tổng quan luận giải: ${synthesis.overview}`,
+    `Xu hướng chung: ${synthesis.toneLabel}.`,
+    `Kết luận: ${synthesis.finalVerdict}`,
+  ].join("\n\n");
 }
 
 /**
@@ -215,8 +232,20 @@ export function TarotModal({ onClose }: Props) {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.9, ease: "easeOut" }}
+                    className="space-y-5"
                   >
                     <TarotSynthesisCard synthesis={synthesis} />
+                    <ChatPanel
+                      eyebrow="Trợ lý AI"
+                      title="Hỏi thêm về lá bài của bạn"
+                      placeholder="Hỏi sâu hơn về một lá bài, cách áp dụng vào tình huống của bạn..."
+                      context={buildTarotChatContext(spread, results as DrawnCard[], synthesis)}
+                      suggestions={[
+                        "Lá nào trong trải bài này quan trọng nhất?",
+                        "Tôi nên làm gì tiếp theo dựa trên trải bài này?",
+                        "Giải thích kỹ hơn về mối liên hệ giữa các lá bài.",
+                      ]}
+                    />
                   </motion.div>
                 )}
 

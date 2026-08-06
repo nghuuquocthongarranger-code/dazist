@@ -44,6 +44,15 @@ function usePrefersReducedMotion() {
   }, []);
 }
 
+/** Thiết bị cảm ứng — tắt Bloom vì kỹ thuật render-to-texture nhiều lượt của nó dễ render sai
+ * (mảng trắng cháy sáng, mất chi tiết) trên một số GPU di động/webview trong ứng dụng. */
+function useIsCoarsePointer() {
+  return useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(pointer: coarse)").matches;
+  }, []);
+}
+
 function useGlowTexture() {
   return useMemo(() => {
     const c = document.createElement("canvas");
@@ -215,10 +224,12 @@ function ConstellationLines() {
 
 function Scene({
   reduced,
+  isCoarsePointer,
   onSelect,
   hideLabels,
 }: {
   reduced: boolean;
+  isCoarsePointer: boolean;
   onSelect: (key: string) => void;
   hideLabels: boolean;
 }) {
@@ -255,7 +266,7 @@ function Scene({
         minPolarAngle={Math.PI / 2.3}
         maxPolarAngle={Math.PI / 1.9}
       />
-      {!reduced && (
+      {!reduced && !isCoarsePointer && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.25} luminanceSmoothing={0.3} />
         </EffectComposer>
@@ -272,11 +283,16 @@ export function WesternHero3D({
   hideLabels?: boolean;
 }) {
   const reduced = usePrefersReducedMotion();
+  const isCoarsePointer = useIsCoarsePointer();
   return (
     <div className="absolute inset-0" aria-hidden="false">
       <Suspense fallback={null}>
-        <Canvas camera={{ position: [0, 0.3, 20], fov: 34 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
-          <Scene reduced={reduced} onSelect={onSelectTopic} hideLabels={hideLabels} />
+        <Canvas
+          camera={{ position: [0, 0.3, 20], fov: 34 }}
+          dpr={isCoarsePointer ? [1, 1.5] : [1, 1.75]}
+          gl={{ antialias: true }}
+        >
+          <Scene reduced={reduced} isCoarsePointer={isCoarsePointer} onSelect={onSelectTopic} hideLabels={hideLabels} />
         </Canvas>
       </Suspense>
     </div>

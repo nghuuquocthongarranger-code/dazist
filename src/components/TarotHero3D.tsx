@@ -180,11 +180,18 @@ function MagicCircle({ radius, y, reduced }: { radius: number; y: number; reduce
   );
 }
 
-function CrystalBall({ reduced, onOpen }: { reduced: boolean; onOpen: () => void }) {
+function CrystalBall({
+  reduced,
+  isCoarsePointer,
+  onOpen,
+}: {
+  reduced: boolean;
+  isCoarsePointer: boolean;
+  onOpen: () => void;
+}) {
   const [hovered, setHovered] = useState(false);
   const coreRef = useRef<THREE.Group>(null);
   const glowTexture = useGlowTexture();
-  const isCoarsePointer = useIsCoarsePointer();
   useCursor(hovered);
 
   useFrame((_state, delta) => {
@@ -265,7 +272,15 @@ function CrystalBall({ reduced, onOpen }: { reduced: boolean; onOpen: () => void
   );
 }
 
-function Scene({ reduced, onOpen }: { reduced: boolean; onOpen: () => void }) {
+function Scene({
+  reduced,
+  isCoarsePointer,
+  onOpen,
+}: {
+  reduced: boolean;
+  isCoarsePointer: boolean;
+  onOpen: () => void;
+}) {
   return (
     <>
       <ambientLight intensity={0.5} />
@@ -273,7 +288,7 @@ function Scene({ reduced, onOpen }: { reduced: boolean; onOpen: () => void }) {
       <Nebula />
       <Stars radius={90} depth={50} count={4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.5} />
       <group position={[0, -0.15, 0]}>
-        <CrystalBall reduced={reduced} onOpen={onOpen} />
+        <CrystalBall reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
       </group>
       <OrbitControls
         enableZoom={false}
@@ -283,7 +298,10 @@ function Scene({ reduced, onOpen }: { reduced: boolean; onOpen: () => void }) {
         minPolarAngle={Math.PI / 2.5}
         maxPolarAngle={Math.PI / 1.8}
       />
-      {!reduced && (
+      {/* Bloom (mipmapBlur) dùng kỹ thuật render-to-texture nhiều lượt, một số GPU di động/trình duyệt
+          webview (vd. trình duyệt trong ứng dụng Messenger) render sai thành mảng trắng cháy sáng —
+          tắt hẳn Bloom trên thiết bị cảm ứng để tránh lỗi, giữ lại glow cộng màu (additive) vốn đã đủ đẹp. */}
+      {!reduced && !isCoarsePointer && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.5} luminanceSmoothing={0.3} />
         </EffectComposer>
@@ -294,11 +312,16 @@ function Scene({ reduced, onOpen }: { reduced: boolean; onOpen: () => void }) {
 
 export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
   const reduced = usePrefersReducedMotion();
+  const isCoarsePointer = useIsCoarsePointer();
   return (
     <div className="absolute inset-0" aria-hidden="false">
       <Suspense fallback={null}>
-        <Canvas camera={{ position: [0, 0.8, 8], fov: 40 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
-          <Scene reduced={reduced} onOpen={onOpen} />
+        <Canvas
+          camera={{ position: [0, 0.8, 8], fov: 40 }}
+          dpr={isCoarsePointer ? [1, 1.5] : [1, 1.75]}
+          gl={{ antialias: true }}
+        >
+          <Scene reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
         </Canvas>
       </Suspense>
     </div>

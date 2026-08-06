@@ -69,6 +69,15 @@ function usePrefersReducedMotion() {
   }, []);
 }
 
+/** Thiết bị cảm ứng — tắt Bloom vì kỹ thuật render-to-texture nhiều lượt của nó dễ render sai
+ * (mảng trắng cháy sáng, mất chi tiết) trên một số GPU di động/webview trong ứng dụng. */
+function useIsCoarsePointer() {
+  return useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(pointer: coarse)").matches;
+  }, []);
+}
+
 /** Vành đai Sao Thổ dựng bằng hạt bụi (Points) rải ngẫu nhiên trong hình khuyên, thay vì một mặt phẳng vẽ rõ nét. */
 function SaturnDustRing({ size }: { size: number }) {
   const positions = useMemo(() => {
@@ -376,7 +385,7 @@ function Nebula() {
   );
 }
 
-function Scene({ reduced }: { reduced: boolean }) {
+function Scene({ reduced, isCoarsePointer }: { reduced: boolean; isCoarsePointer: boolean }) {
   const ratioMap = useMemo(() => {
     const m = new Map<Element, number>();
     elementRatios.forEach((r) => m.set(r.element, r.percent));
@@ -423,7 +432,7 @@ function Scene({ reduced }: { reduced: boolean }) {
         minPolarAngle={Math.PI / 2.6}
         maxPolarAngle={Math.PI / 1.7}
       />
-      {!reduced && (
+      {!reduced && !isCoarsePointer && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur intensity={0.6} luminanceThreshold={0.35} luminanceSmoothing={0.2} />
         </EffectComposer>
@@ -434,11 +443,16 @@ function Scene({ reduced }: { reduced: boolean }) {
 
 export function Hero3D() {
   const reduced = usePrefersReducedMotion();
+  const isCoarsePointer = useIsCoarsePointer();
   return (
     <div className="absolute inset-0" aria-hidden="true">
       <Suspense fallback={null}>
-        <Canvas camera={{ position: [0, 8, 28], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
-          <Scene reduced={reduced} />
+        <Canvas
+          camera={{ position: [0, 8, 28], fov: 42 }}
+          dpr={isCoarsePointer ? [1, 1.5] : [1, 1.75]}
+          gl={{ antialias: true }}
+        >
+          <Scene reduced={reduced} isCoarsePointer={isCoarsePointer} />
         </Canvas>
       </Suspense>
     </div>

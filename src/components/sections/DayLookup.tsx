@@ -2,20 +2,14 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tierFromPercent, getHiddenStems, type HiddenStemDetail } from "../../lib/canChi";
 import { formatDegInSign, type WesternAstroResult } from "../../lib/westernAstro";
-import { evaluateActivity, type ActivityVerdict } from "../../lib/activityAdvisor";
 import { computeDayScoreBundle, type ColumnScore, type DayScoreBundle } from "../../lib/dayScore";
-import { getLuuNienPalace } from "../../lib/tuViScore";
-import { TRUONG_SINH_TONE } from "../../data/tuViProfile";
+import { getLuuNhatPalace, getLuuNguyetPalace, getLuuNienPalace } from "../../lib/tuViScore";
+import { TRUONG_SINH_TONE, type TuViPalace } from "../../data/tuViProfile";
 import { CanBadge, ChiBadge } from "../CanChiBadge";
 import { SectionHeading } from "../GlassCard";
 import { ReadingModal } from "../ReadingModal";
+import { ChatPanel } from "../ChatPanel";
 import { ROLE_LABEL } from "../../lib/elements";
-
-const ACTIVITY_TIER_STYLE: Record<ActivityVerdict["tier"], { bg: string; border: string; text: string; hex: string }> = {
-  nen: { bg: "from-moc/20 to-moc/5", border: "border-moc/30", text: "text-moc", hex: "#3ddc84" },
-  "can-nhac": { bg: "from-tho/20 to-tho/5", border: "border-tho/30", text: "text-tho", hex: "#e0a94a" },
-  "khong-nen": { bg: "from-hoa/20 to-hoa/5", border: "border-hoa/30", text: "text-hoa", hex: "#ff5f5f" },
-};
 
 function toISODate(d: Date) {
   const y = d.getFullYear();
@@ -29,6 +23,39 @@ function shiftDateStr(dateStr: string, deltaDays: number): string {
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + deltaDays);
   return toISODate(dt);
+}
+
+/** Hiển thị ngày/tháng/năm cố định — không phụ thuộc định dạng locale mặc định của trình duyệt
+ * (input[type=date] gốc có thể hiện tháng/ngày/năm tuỳ trình duyệt/hệ điều hành). */
+function formatDMY(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-");
+  if (!y || !m || !d) return isoDate;
+  return `${d}/${m}/${y}`;
+}
+
+/** Tóm tắt lá số + điểm ngày/tháng/năm đang xem thành văn bản gửi kèm cho AI — để AI trả lời bám sát dữ liệu
+ * thật của người dùng thay vì đoán chung chung. */
+function buildDayChatContext(bundle: DayScoreBundle, dateStr: string): string {
+  const dayTier = tierFromPercent(bundle.day.combined);
+  const monthTier = tierFromPercent(bundle.month.combined);
+  const yearTier = tierFromPercent(bundle.year.combined);
+  const luuNhat = getLuuNhatPalace(bundle.date);
+  const luuNguyet = getLuuNguyetPalace(bundle.date);
+  const luuNien = getLuuNienPalace(bundle.date.getFullYear());
+
+  const lines = [
+    `Ngày đang xem: ${formatDMY(dateStr)}.`,
+    `Điểm tổng hợp (thang 0-100, 0-30 Xấu / 30-50 Bình thường / 50-70 Tốt / 70-100 Rất tốt): Ngày ${bundle.day.combined} (${dayTier.label}), Tháng ${bundle.month.combined} (${monthTier.label}), Năm ${bundle.year.combined} (${yearTier.label}).`,
+    `Bát Tự — Trụ ngày ${bundle.bazi.day.pillar.label}, Thập Thần ${bundle.bazi.day.tenGod}, vai trò ${ROLE_LABEL[bundle.bazi.day.canRole]}. ${bundle.bazi.day.summary}`,
+    `Bát Tự — Trụ tháng ${bundle.bazi.monthPillar.label} (tiết khí ${bundle.bazi.monthPillar.solarTerm.name}). Trụ năm/Lưu Niên ${bundle.bazi.yearPillar.label}.`,
+    `Chiêm tinh hôm nay: Mặt Trăng ${formatDegInSign(bundle.western.moon.lon)}, Mặt Trời ${formatDegInSign(bundle.western.sun.lon)}.`,
+  ];
+  if (bundle.western.flags.voidOfCourse) lines.push("Lưu ý: Mặt Trăng đang Void-of-Course (năng lượng trôi nổi).");
+  if (bundle.western.flags.mercuryRetrograde) lines.push("Lưu ý: Thuỷ Tinh đang nghịch hành (giao tiếp/hợp đồng dễ trục trặc).");
+  if (luuNhat) lines.push(`Tử Vi — cung Lưu Nhật (ngày): ${luuNhat.chi} (${luuNhat.cungName}), Vòng Trường Sinh: ${luuNhat.truongSinh}${luuNhat.trietTuan ? `, có ${luuNhat.trietTuan}` : ""}.`);
+  if (luuNguyet) lines.push(`Tử Vi — cung Lưu Nguyệt (tháng): ${luuNguyet.chi} (${luuNguyet.cungName}), ${luuNguyet.truongSinh}.`);
+  if (luuNien) lines.push(`Tử Vi — cung Lưu Niên (năm): ${luuNien.chi} (${luuNien.cungName}), ${luuNien.truongSinh}.`);
+  return lines.join("\n");
 }
 
 const TIER_STYLE: Record<string, { bg: string; text: string; ring: string; hex: string }> = {
@@ -303,13 +330,20 @@ function WesternBlock({
   );
 }
 
-function TuViBlock({ year }: { year: number }) {
-  const palace = getLuuNienPalace(year);
+const TUVI_ANCHOR: Record<ColumnKey, { pick: (date: Date) => TuViPalace | undefined; label: string }> = {
+  day: { pick: (d) => getLuuNhatPalace(d), label: "cung Lưu Nhật (ngày)" },
+  month: { pick: (d) => getLuuNguyetPalace(d), label: "cung Lưu Nguyệt (tháng)" },
+  year: { pick: (d) => getLuuNienPalace(d.getFullYear()), label: "cung Lưu Niên (năm)" },
+};
+
+function TuViBlock({ columnKey, date }: { columnKey: ColumnKey; date: Date }) {
+  const anchor = TUVI_ANCHOR[columnKey];
+  const palace = anchor.pick(date);
   if (!palace) return null;
   const tone = TRUONG_SINH_TONE[palace.truongSinh];
   return (
     <div className="rounded-2xl p-5 bg-white/5 border border-white/10">
-      <p className="text-xs uppercase tracking-wider text-white/40 mb-3">Tử Vi — cung Lưu Niên {year}</p>
+      <p className="text-xs uppercase tracking-wider text-white/40 mb-3">Tử Vi — {anchor.label}</p>
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <span className="font-display text-gold-soft text-base">
           {palace.chi} · {palace.cungName}
@@ -374,7 +408,7 @@ function ColumnDetailModal({
 
         <BaziBlock columnKey={columnKey} bundle={bundle} />
         <WesternBlock western={western} advice={advice} label={anchor.label} />
-        <TuViBlock year={bundle.date.getFullYear()} />
+        <TuViBlock columnKey={columnKey} date={bundle.date} />
       </div>
     </ReadingModal>
   );
@@ -382,7 +416,6 @@ function ColumnDetailModal({
 
 export function DayLookup() {
   const [dateStr, setDateStr] = useState(() => toISODate(new Date()));
-  const [activityInput, setActivityInput] = useState("");
   const [detailKey, setDetailKey] = useState<ColumnKey | null>(null);
 
   const bundle = useMemo<DayScoreBundle | null>(() => {
@@ -394,12 +427,6 @@ export function DayLookup() {
   const today = toISODate(new Date());
   const overallTier = bundle ? tierFromPercent(bundle.day.combined) : null;
   const overallStyle = overallTier ? TIER_STYLE[overallTier.tier] : TIER_STYLE["binh-thuong"];
-
-  const activityVerdict = useMemo(() => {
-    if (!bundle || !activityInput.trim()) return null;
-    return evaluateActivity(activityInput, bundle.bazi.day, bundle.western, bundle.day.combined);
-  }, [activityInput, bundle]);
-  const activityStyle = activityVerdict ? ACTIVITY_TIER_STYLE[activityVerdict.tier] : null;
 
   return (
     <section id="tra-cuu" className="relative py-20 sm:py-28 px-6 scroll-mt-20">
@@ -424,13 +451,20 @@ export function DayLookup() {
               >
                 ‹
               </button>
-              <input
-                id="day-lookup-date"
-                type="date"
-                value={dateStr}
-                onChange={(e) => setDateStr(e.target.value || today)}
-                className="flex-1 sm:w-auto bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px]"
-              />
+              <div className="relative flex-1 sm:w-auto min-h-[44px]">
+                {/* Input gốc ẩn nhưng vẫn nhận click/nhập để mở lịch chọn ngày của trình duyệt — phần chữ
+                    hiển thị dùng định dạng ngày/tháng/năm riêng, không phụ thuộc locale trình duyệt. */}
+                <input
+                  id="day-lookup-date"
+                  type="date"
+                  value={dateStr}
+                  onChange={(e) => setDateStr(e.target.value || today)}
+                  className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="pointer-events-none flex items-center h-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white min-h-[44px] transition peer-focus:border-gold peer-focus:ring-2 peer-focus:ring-gold/40">
+                  {formatDMY(dateStr)}
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setDateStr((d) => shiftDateStr(d, 1))}
@@ -479,51 +513,19 @@ export function DayLookup() {
                   ))}
                 </div>
 
-                {/* Hỏi việc nên làm trong ngày */}
-                <div className="rounded-2xl p-5 sm:p-6 bg-white/5 border border-white/10">
-                  <label htmlFor="activity-input" className="block text-sm text-white/70 mb-2 font-medium">
-                    Hôm nay bạn định làm việc gì? Để xem có nên làm không.
-                  </label>
-                  <input
-                    id="activity-input"
-                    type="text"
-                    value={activityInput}
-                    onChange={(e) => setActivityInput(e.target.value)}
-                    placeholder="Vd: ký hợp đồng, cưới hỏi, đầu tư, khai trương, du lịch, phỏng vấn..."
-                    className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px]"
-                  />
-
-                  <AnimatePresence mode="wait">
-                    {activityVerdict && activityStyle && (
-                      <motion.div
-                        key={activityInput}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.3 }}
-                        className={`mt-5 rounded-xl p-5 bg-linear-to-br ${activityStyle.bg} border ${activityStyle.border}`}
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-4 mb-1">
-                          <span className={`font-display text-xl font-semibold ${activityStyle.text}`}>
-                            {activityVerdict.label}
-                          </span>
-                          <PercentGauge percent={activityVerdict.score} color={activityStyle.hex} size="sm" />
-                        </div>
-                        {activityVerdict.category && (
-                          <p className="text-xs text-white/40 mb-3">Nhóm việc: {activityVerdict.category.label}</p>
-                        )}
-                        <ul className="space-y-1.5 text-sm text-white/70 mt-3">
-                          {activityVerdict.reasons.map((r, i) => (
-                            <li key={i} className="flex gap-2">
-                              <span className="text-gold-soft shrink-0">•</span>
-                              <span>{r}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                {/* Hỏi đáp AI về ngày đang xem */}
+                <ChatPanel
+                  key={dateStr}
+                  eyebrow="Trợ lý AI"
+                  title="Hỏi đáp huyền học"
+                  placeholder="Hỏi về hôm nay: có nên ký hợp đồng không, ngày này hợp việc gì..."
+                  context={buildDayChatContext(bundle, dateStr)}
+                  suggestions={[
+                    "Hôm nay có hợp ký hợp đồng, khai trương không?",
+                    "Tôi nên tập trung vào việc gì hôm nay?",
+                    "Có điều gì cần tránh hôm nay không?",
+                  ]}
+                />
 
                 <p className="text-xs text-white/35 leading-relaxed text-center px-4">
                   Điểm số là tổng hợp tham khảo từ ba hệ thống chiêm tinh/mệnh lý độc lập (Bát Tự, Chiêm tinh học Tây

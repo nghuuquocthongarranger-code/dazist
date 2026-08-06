@@ -1,6 +1,6 @@
 import { evaluateDayFull, getBaziYearNumber, pillarPercent, CAN, type FullDayVerdict } from "./canChi";
 import { computeWesternAstroScore, type WesternAstroResult } from "./westernAstro";
-import { getTuViYearPercent, getTuViColumnPercent } from "./tuViScore";
+import { getTuViDayColumnPercent, getTuViMonthColumnPercent, getTuViYearColumnPercent } from "./tuViScore";
 import { daiVan } from "../data/baziProfile";
 import type { DungHyKy } from "./elements";
 
@@ -40,7 +40,6 @@ export interface DayScoreBundle {
   western: WesternAstroResult;
   westernMonth: WesternAstroResult;
   westernYear: WesternAstroResult;
-  tuViPercent: number;
   daiVan: DaiVanPeriod | null;
   day: ColumnScore;
   month: ColumnScore;
@@ -64,8 +63,9 @@ function blend(parts: { percent: number; weight: number }[]): number {
  *  - Ngày: Đại Vận + Lưu Niên (Trụ Năm) + Trụ Tháng (tiết khí thực) + Trụ Ngày.
  *  - Tháng: Đại Vận + Lưu Niên + Trụ Tháng (tiết khí thực).
  *  - Năm: Đại Vận + Lưu Niên (Trụ Năm).
- * Phần Tử Vi hoà trộn cung Đại Vận (theo tuổi) + cung Lưu Niên (theo Chi năm dương lịch), trọng số Đại Vận
- * tăng dần Ngày → Tháng → Năm (giống cách Bát Tự tăng trọng số Đại Vận cho mốc thời gian càng dài) — xem lib/tuViScore.ts.
+ * Phần Tử Vi dùng 3 cơ chế "an lưu" RIÊNG cho từng cấp thời gian — không phải cùng một con số của năm dùng lại
+ * cho cả ngày/tháng: Lưu Nhật (ngày) cho cột Ngày, Lưu Nguyệt (tháng) cho cột Tháng, Lưu Niên (năm) cho cột Năm,
+ * mỗi cột có thêm Đại Vận làm nền — xem lib/tuViScore.ts.
  *
  * Phần Chiêm Tinh: cột Ngày dùng transit đúng ngày đang xem; cột Tháng/Năm KHÔNG được đổi theo từng ngày —
  * dùng transit tại một mốc cố định (đầu tháng / đầu năm dương lịch chứa ngày đang xem) để điểm hai cột này
@@ -76,10 +76,9 @@ export function computeDayScoreBundle(date: Date): DayScoreBundle {
   const western = computeWesternAstroScore(date);
   const westernMonth = computeWesternAstroScore(new Date(date.getFullYear(), date.getMonth(), 1));
   const westernYear = computeWesternAstroScore(new Date(date.getFullYear(), 0, 1));
-  const tuViPercent = getTuViYearPercent(date.getFullYear());
-  const tuViDayPercent = getTuViColumnPercent(date.getFullYear(), 0.15);
-  const tuViMonthPercent = getTuViColumnPercent(date.getFullYear(), 0.3);
-  const tuViYearPercent = getTuViColumnPercent(date.getFullYear(), 0.5);
+  const tuViDayPercent = getTuViDayColumnPercent(date);
+  const tuViMonthPercent = getTuViMonthColumnPercent(date);
+  const tuViYearPercent = getTuViYearColumnPercent(date.getFullYear());
   const daiVanPeriod = getDaiVanForYear(getBaziYearNumber(date));
   const daiVanPercent = daiVanPeriod?.percent ?? 50;
 
@@ -103,5 +102,5 @@ export function computeDayScoreBundle(date: Date): DayScoreBundle {
   const month = combine("Tháng", monthBazi, westernMonth.percent, tuViMonthPercent);
   const year = combine("Năm", yearBazi, westernYear.percent, tuViYearPercent);
 
-  return { date, bazi, western, westernMonth, westernYear, tuViPercent, daiVan: daiVanPeriod, day, month, year };
+  return { date, bazi, western, westernMonth, westernYear, daiVan: daiVanPeriod, day, month, year };
 }
