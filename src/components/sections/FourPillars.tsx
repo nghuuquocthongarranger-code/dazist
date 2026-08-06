@@ -1,6 +1,4 @@
-import { CanBadge, ChiBadge } from "../CanChiBadge";
 import { fourPillars, nhatChu, tenGodRatios } from "../../data/baziProfile";
-import { motion } from "framer-motion";
 
 export function FourPillarsContent() {
   return (
