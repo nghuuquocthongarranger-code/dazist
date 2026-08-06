@@ -233,7 +233,7 @@ function CrystalBall({ reduced, onOpen }: { reduced: boolean; onOpen: () => void
             <meshPhysicalMaterial
               color={hovered ? "#ffffff" : "#f2f3f8"}
               transparent
-              opacity={0.42}
+              opacity={0.75}
               roughness={0.08}
               metalness={0}
               clearcoat={1}
