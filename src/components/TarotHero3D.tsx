@@ -209,15 +209,15 @@ function CrystalBall({
               map={glowTexture}
               color="#ffffff"
               transparent
-              opacity={isMobile ? (hovered ? 0.8 : 0.6) : (hovered ? 0.55 : 0.4)}
+              opacity={isMobile ? (hovered ? 1.6 : 1.2) : (hovered ? 0.55 : 0.4)}
               depthWrite={false}
               blending={THREE.AdditiveBlending}
             />
           </mesh>
         </Billboard>
 
-        <pointLight position={[0, 0, 0]} intensity={isMobile ? 1.5 : 0.7} color="#f4f6ff" distance={8} decay={2.2} />
-        <pointLight position={[2.4, 2.6, 3.2]} intensity={isMobile ? 1.0 : 0.5} color="#fff6d6" distance={16} decay={2} />
+        <pointLight position={[0, 0, 0]} intensity={isMobile ? 3.0 : 0.7} color="#f4f6ff" distance={8} decay={2.2} />
+        <pointLight position={[2.4, 2.6, 3.2]} intensity={isMobile ? 2.0 : 0.5} color="#fff6d6" distance={16} decay={2} />
 
         <group ref={coreRef}>
           <Sparkles count={26} scale={BALL_RADIUS * 1.1} size={2} speed={reduced ? 0 : 0.18} color="#f1d98b" noise={0.25} opacity={0.5} />
@@ -229,7 +229,7 @@ function CrystalBall({
             <meshPhysicalMaterial
               color={hovered ? "#ffffff" : "#f2f3f8"}
               transparent
-              opacity={isMobile ? 0.95 : 0.75}
+              opacity={isMobile ? 1.0 : 0.75}
               roughness={0.08}
               metalness={0}
               clearcoat={1}
@@ -272,8 +272,8 @@ function Scene({
 }) {
   return (
     <>
-      <ambientLight intensity={isMobile ? 0.8 : 0.5} />
-      <hemisphereLight args={["#8ea6d8", "#0b0a18", isMobile ? 0.6 : 0.45]} />
+      <ambientLight intensity={isMobile ? 1.6 : 0.5} />
+      <hemisphereLight args={["#8ea6d8", "#0b0a18", isMobile ? 1.2 : 0.45]} />
       <Nebula />
       <Stars radius={90} depth={50} count={isMobile ? 2000 : 4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.5} />
       <group position={[0, -0.15, 0]}>
