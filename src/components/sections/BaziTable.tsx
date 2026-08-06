@@ -21,14 +21,30 @@ import {
   tamThinTuHinh,
   luuNienByDaiVan,
 } from "../../data/baziProfile";
+import { CAN, CHI } from "../../lib/canChi";
+import { ELEMENT_COLOR, type Element } from "../../lib/elements";
 
-const ELEMENT_COLOR: Record<string, string> = {
-  moc: "#2fbf9b",
-  hoa: "#e2493f",
-  tho: "#e0b23c",
-  kim: "#a988d9",
-  thuy: "#22447a",
-};
+const CAN_ELEMENT: Record<string, Element> = Object.fromEntries(CAN.map((c) => [c.name, c.element]));
+const CHI_ELEMENT: Record<string, Element> = Object.fromEntries(CHI.map((c) => [c.name, c.element]));
+
+/** 12 Địa Chi luân phiên Dương/Âm bắt đầu từ Tý = Dương, đúng thứ tự khai báo trong CHI. */
+const CHI_POLARITY: Record<string, "Dương" | "Âm"> = Object.fromEntries(
+  CHI.map((c, i) => [c.name, i % 2 === 0 ? "Dương" : "Âm"]),
+);
+
+const ELEMENT_VN: Record<string, string> = { moc: "Mộc", hoa: "Hỏa", tho: "Thổ", kim: "Kim", thuy: "Thủy" };
+
+function canNoteOf(can: string): string {
+  const info = CAN.find((c) => c.name === can);
+  if (!info) return "";
+  return `${info.polarity === "duong" ? "Dương" : "Âm"} ${ELEMENT_VN[info.element]}`;
+}
+
+function chiNoteOf(chi: string): string {
+  const element = CHI_ELEMENT[chi];
+  if (!element) return "";
+  return `${CHI_POLARITY[chi]} ${ELEMENT_VN[element]}`;
+}
 
 /* ──────── Modal ──────── */
 function Modal({
@@ -151,19 +167,46 @@ function PillarsTable() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-white/5">
+              <tr>
                 <td className="py-2 text-gold-soft font-semibold">Thiên Can</td>
                 {fourPillars.map((p) => (
                   <td key={p.position} className="text-center py-2">
-                    <span className="font-display text-base sm:text-lg text-white">{p.can}</span>
-                    <span className="text-white/40 ml-1">({p.canNote})</span>
+                    <span
+                      className="font-display text-base sm:text-lg font-semibold"
+                      style={{ color: ELEMENT_COLOR[CAN_ELEMENT[p.can]] }}
+                    >
+                      {p.can}
+                    </span>
                   </td>
                 ))}
               </tr>
               <tr className="border-b border-white/5">
+                <td className="py-1 text-white/30 text-[10px] sm:text-xs"></td>
+                {fourPillars.map((p) => (
+                  <td key={p.position} className="text-center py-1 text-[10px] sm:text-xs text-white/40">
+                    {canNoteOf(p.can)}
+                  </td>
+                ))}
+              </tr>
+              <tr>
                 <td className="py-2 text-gold-soft font-semibold">Địa Chi</td>
                 {fourPillars.map((p) => (
-                  <td key={p.position} className="text-center py-2 font-display text-base sm:text-lg text-gold-soft">{p.chi}</td>
+                  <td key={p.position} className="text-center py-2">
+                    <span
+                      className="font-display text-base sm:text-lg font-semibold"
+                      style={{ color: ELEMENT_COLOR[CHI_ELEMENT[p.chi]] }}
+                    >
+                      {p.chi}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-white/5">
+                <td className="py-1 text-white/30 text-[10px] sm:text-xs"></td>
+                {fourPillars.map((p) => (
+                  <td key={p.position} className="text-center py-1 text-[10px] sm:text-xs text-white/40">
+                    {chiNoteOf(p.chi)}
+                  </td>
                 ))}
               </tr>
               <tr className="border-b border-white/5">

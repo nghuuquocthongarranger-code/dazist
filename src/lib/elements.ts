@@ -12,7 +12,7 @@ export const ELEMENT_COLOR: Record<Element, string> = {
   moc: "#3ddc84",
   hoa: "#ff5f5f",
   tho: "#e0a94a",
-  kim: "#f2e6c8",
+  kim: "#f5f5f5",
   thuy: "#4a9fe0",
 };
 
