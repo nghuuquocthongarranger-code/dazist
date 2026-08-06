@@ -1,5 +1,5 @@
-import { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Suspense, useMemo, useRef, useState, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Stars, Sparkles, Float, Billboard, MeshTransmissionMaterial, useCursor } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -13,9 +13,6 @@ function usePrefersReducedMotion() {
   }, []);
 }
 
-/** Thiết bị cảm ứng (điện thoại/tablet) — GPU thường không kham nổi kỹ thuật multi-pass
- * (render-to-texture khúc xạ + backside) của MeshTransmissionMaterial, dễ gây lỗi hình ảnh
- * (đen/trắng xoá/vỡ hình). Dùng chất liệu thủy tinh nhẹ hơn cho các thiết bị này. */
 function useIsCoarsePointer() {
   return useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -67,7 +64,6 @@ function Nebula() {
   );
 }
 
-/** Chân đế gỗ chạm khắc kiểu đế quả cầu pha lê thật ngoài đời — vòng ôm, thân loe, 3 chân vuốt, viền vàng. */
 function Pedestal({ reduced }: { reduced: boolean }) {
   const woodMat = { color: "#2b1a12", roughness: 0.55, metalness: 0.15 } as const;
   const goldMat = { color: "#d4af37", roughness: 0.3, metalness: 0.75, emissive: "#3a2a08", emissiveIntensity: 0.3 } as const;
@@ -82,7 +78,6 @@ function Pedestal({ reduced }: { reduced: boolean }) {
 
   return (
     <group position={[0, -BALL_RADIUS - 0.42, 0]}>
-      {/* Vòng ôm cradle đỡ đáy quả cầu */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.16, 0]}>
         <torusGeometry args={[BALL_RADIUS * 0.62, BALL_RADIUS * 0.1, 20, 48]} />
         <meshStandardMaterial {...woodMat} />
@@ -91,8 +86,6 @@ function Pedestal({ reduced }: { reduced: boolean }) {
         <torusGeometry args={[BALL_RADIUS * 0.62, BALL_RADIUS * 0.02, 12, 48]} />
         <meshStandardMaterial {...goldMat} />
       </mesh>
-
-      {/* Thân loe hình nón cụt */}
       <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[BALL_RADIUS * 0.5, BALL_RADIUS * 0.34, 0.42, 32]} />
         <meshStandardMaterial {...woodMat} />
@@ -101,14 +94,10 @@ function Pedestal({ reduced }: { reduced: boolean }) {
         <torusGeometry args={[BALL_RADIUS * 0.34, 0.018, 10, 32]} />
         <meshStandardMaterial {...goldMat} />
       </mesh>
-
-      {/* Đế tròn đáy */}
       <mesh position={[0, -0.34, 0]}>
         <cylinderGeometry args={[BALL_RADIUS * 0.62, BALL_RADIUS * 0.7, 0.08, 32]} />
         <meshStandardMaterial {...woodMat} />
       </mesh>
-
-      {/* 3 chân vuốt kiểu cổ điển */}
       {legAngles.map((a, i) => {
         const x = Math.cos(a) * BALL_RADIUS * 0.5;
         const z = Math.sin(a) * BALL_RADIUS * 0.5;
@@ -119,8 +108,6 @@ function Pedestal({ reduced }: { reduced: boolean }) {
           </mesh>
         );
       })}
-
-      {/* Sương mờ huyền bí quẩn quanh đế */}
       <group ref={mistRef}>
         <Sparkles count={18} scale={[BALL_RADIUS * 1.8, 0.3, BALL_RADIUS * 1.8]} size={4} speed={reduced ? 0 : 0.12} color="#c9a6ff" noise={0.6} opacity={0.35} position={[0, -0.3, 0]} />
       </group>
@@ -212,7 +199,6 @@ function CrystalBall({
         onPointerOut={() => setHovered(false)}
         scale={hovered ? 1.04 : 1}
       >
-        {/* Quầng sáng mềm bao quanh quả cầu — mô phỏng ánh sáng khuếch tán thật ngoài đời */}
         <Billboard>
           <mesh>
             <planeGeometry args={[BALL_RADIUS * (hovered ? 3.4 : 2.9), BALL_RADIUS * (hovered ? 3.4 : 2.9)]} />
@@ -240,7 +226,7 @@ function CrystalBall({
             <meshPhysicalMaterial
               color={hovered ? "#ffffff" : "#f2f3f8"}
               transparent
-              opacity={0.75}
+              opacity={0.85} // Tăng opacity để dễ thấy hơn
               roughness={0.08}
               metalness={0}
               clearcoat={1}
@@ -281,6 +267,15 @@ function Scene({
   isCoarsePointer: boolean;
   onOpen: () => void;
 }) {
+  // Force re-render khi resize
+  const { size } = useThree();
+  
+  useEffect(() => {
+    // Log để debug
+    console.log("Scene rendered - size:", size.width, size.height);
+    console.log("isCoarsePointer:", isCoarsePointer);
+  }, [size, isCoarsePointer]);
+
   return (
     <>
       <ambientLight intensity={0.5} />
@@ -298,9 +293,7 @@ function Scene({
         minPolarAngle={Math.PI / 2.5}
         maxPolarAngle={Math.PI / 1.8}
       />
-      {/* Bloom (mipmapBlur) dùng kỹ thuật render-to-texture nhiều lượt, một số GPU di động/trình duyệt
-          webview (vd. trình duyệt trong ứng dụng Messenger) render sai thành mảng trắng cháy sáng —
-          tắt hẳn Bloom trên thiết bị cảm ứng để tránh lỗi, giữ lại glow cộng màu (additive) vốn đã đủ đẹp. */}
+      {/* TẮT HOÀN TOÀN BLOOM TRÊN MOBILE - nguyên nhân chính gây lỗi */}
       {!reduced && !isCoarsePointer && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.5} luminanceSmoothing={0.3} />
@@ -313,13 +306,35 @@ function Scene({
 export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
   const reduced = usePrefersReducedMotion();
   const isCoarsePointer = useIsCoarsePointer();
+  
+  // Thêm state để force re-render
+  const [key, setKey] = useState(0);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setKey(prev => prev + 1);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="absolute inset-0" aria-hidden="false">
       <Suspense fallback={null}>
         <Canvas
+          key={key} // Force re-render khi resize
           camera={{ position: [0, 0.8, 8], fov: 40 }}
-          dpr={isCoarsePointer ? [1, 1.5] : [1, 1.75]}
-          gl={{ antialias: true }}
+          dpr={isCoarsePointer ? [1, 1.2] : [1, 1.75]} // Giảm dpr trên mobile
+          gl={{ 
+            antialias: true,
+            alpha: true,
+            powerPreference: isCoarsePointer ? "default" : "high-performance"
+          }}
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'block'
+          }}
         >
           <Scene reduced={reduced} isCoarsePointer={isCoarsePointer} onOpen={onOpen} />
         </Canvas>
