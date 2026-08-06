@@ -209,16 +209,16 @@ function CrystalBall({
               map={glowTexture}
               color="#ffffff"
               transparent
-              opacity={isMobile ? (hovered ? 4 : 3) : (hovered ? 0.55 : 0.4)}
+              opacity={isMobile ? (hovered ? 2.4 : 1.8) : (hovered ? 0.55 : 0.4)}
               depthWrite={false}
               blending={THREE.AdditiveBlending}
             />
           </mesh>
         </Billboard>
 
-        <pointLight position={[0, 0, 0]} intensity={isMobile ? 7.5 : 0.7} color="#f4f6ff" distance={12} decay={1.5} />
-        <pointLight position={[2.4, 2.6, 3.2]} intensity={isMobile ? 5 : 0.5} color="#fff6d6" distance={16} decay={1.5} />
-        <pointLight position={[-2.4, -1.6, 2.2]} intensity={isMobile ? 4 : 0} color="#ffd700" distance={12} decay={1.5} />
+        <pointLight position={[0, 0, 0]} intensity={isMobile ? 4.5 : 0.7} color="#f4f6ff" distance={12} decay={1.5} />
+        <pointLight position={[2.4, 2.6, 3.2]} intensity={isMobile ? 3 : 0.5} color="#fff6d6" distance={16} decay={1.5} />
+        <pointLight position={[-2.4, -1.6, 2.2]} intensity={isMobile ? 2.4 : 0} color="#ffd700" distance={12} decay={1.5} />
 
         <group ref={coreRef}>
           <Sparkles count={26} scale={BALL_RADIUS * 1.1} size={2} speed={reduced ? 0 : 0.18} color="#f1d98b" noise={0.25} opacity={0.5} />
@@ -236,9 +236,9 @@ function CrystalBall({
               clearcoat={1}
               clearcoatRoughness={0.08}
               reflectivity={1}
-              envMapIntensity={isMobile ? 5 : 1.2}
+              envMapIntensity={isMobile ? 3 : 1.2}
               emissive={isMobile ? "#ffffff" : "#000000"}
-              emissiveIntensity={isMobile ? 2.5 : 0}
+              emissiveIntensity={isMobile ? 1.5 : 0}
             />
           ) : (
             <MeshTransmissionMaterial
@@ -275,8 +275,8 @@ function Scene({
 }) {
   return (
     <>
-      <ambientLight intensity={isMobile ? 4 : 0.5} />
-      <hemisphereLight args={["#8ea6d8", "#0b0a18", isMobile ? 3 : 0.45]} />
+      <ambientLight intensity={isMobile ? 2.4 : 0.5} />
+      <hemisphereLight args={["#8ea6d8", "#0b0a18", isMobile ? 1.8 : 0.45]} />
       <Nebula />
       <Stars radius={90} depth={50} count={isMobile ? 2000 : 4500} factor={2.8} saturation={0} fade speed={reduced ? 0 : 0.5} />
       <group position={[0, -0.15, 0]}>
