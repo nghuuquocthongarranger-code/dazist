@@ -16,7 +16,6 @@ function CrystalBall({ onOpen }: { onOpen: () => void }) {
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.005;
-      // Hiệu ứng glow nhẹ
       const material = meshRef.current.material as THREE.MeshPhysicalMaterial;
       if (material) {
         material.emissiveIntensity = 0.2 + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
@@ -32,7 +31,6 @@ function CrystalBall({ onOpen }: { onOpen: () => void }) {
         onPointerOut={() => setHovered(false)}
         scale={hovered ? 1.05 : 1}
       >
-        {/* Quả cầu chính */}
         <mesh ref={meshRef}>
           <sphereGeometry args={[BALL_RADIUS, 48, 48]} />
           <meshPhysicalMaterial
@@ -49,7 +47,6 @@ function CrystalBall({ onOpen }: { onOpen: () => void }) {
           />
         </mesh>
 
-        {/* Đế gỗ đơn giản */}
         <group position={[0, -BALL_RADIUS - 0.3, 0]}>
           <mesh>
             <cylinderGeometry args={[BALL_RADIUS * 0.5, BALL_RADIUS * 0.3, 0.3, 16]} />
@@ -61,7 +58,6 @@ function CrystalBall({ onOpen }: { onOpen: () => void }) {
           </mesh>
         </group>
 
-        {/* Vòng sáng bao quanh */}
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <ringGeometry args={[BALL_RADIUS * 1.4, BALL_RADIUS * 1.5, 32]} />
           <meshBasicMaterial color="#ffd700" transparent opacity={0.15} side={THREE.DoubleSide} />
@@ -72,7 +68,6 @@ function CrystalBall({ onOpen }: { onOpen: () => void }) {
 }
 
 export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
-  // Force re-render khi resize
   const [key, setKey] = useState(0);
 
   useEffect(() => {
@@ -91,7 +86,7 @@ export function TarotHero3D({ onOpen }: { onOpen: () => void }) {
         <Canvas
           key={key}
           camera={{ position: [0, 0.5, 7], fov: 45 }}
-          dpr={isIOS ? [0.5, 1] : [1, 1.5]} // iOS dùng DPR thấp
+          dpr={isIOS ? [0.5, 1] : [1, 1.5]}
           gl={{ 
             antialias: false,
             alpha: true,
