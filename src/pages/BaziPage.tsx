@@ -1,11 +1,11 @@
 import { BaziHero } from "../components/sections/BaziHero";
-import { BaziHub } from "../components/sections/BaziHub";
+import { BaziTable } from "../components/sections/BaziTable";
 
 export function BaziPage() {
   return (
     <>
       <BaziHero />
-      <BaziHub />
+      <BaziTable />
     </>
   );
 }
