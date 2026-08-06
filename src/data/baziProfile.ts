@@ -245,21 +245,22 @@ export const thanSatByPillar = [
 export type ThanSatNature = "tot" | "xau" | "trung-tinh";
 
 export const thanSatMeanings: { name: string; freq: string; desc: string; nature: ThanSatNature }[] = [
-  { name: "Thiên La", freq: "4/4 trụ", desc: "Sao hung bậc nhất — chủ về bó buộc, trắc trở, hay gặp cản trở/thị phi/kiện tụng; cộng hưởng trực tiếp với Tam Thìn Tự Hình, cũng gắn với ý nghĩa tu tâm/khắc kỷ nếu biết chuyển hóa.", nature: "xau" },
-  { name: "Thái Cực", freq: "3/4 trụ", desc: "Sao quý liên quan học thuật, triết lý, tôn giáo, Dịch lý — duyên với nghiên cứu chuyên sâu, minh triết.", nature: "tot" },
-  { name: "Quả Tú", freq: "3/4 trụ (Ngày và Giờ)", desc: "Sao chủ cô đơn — nhắc nhở cần chủ động vun đắp, tránh khép kín trong tình cảm và quan hệ con cái.", nature: "xau" },
-  { name: "Hồng Diễm", freq: "3/4 trụ", desc: "Sao đào hoa phụ, sức hút ngoại hình, dễ có duyên tình cảm — cần tiết chế để tránh thị phi khi kết hợp cùng Quả Tú.", nature: "trung-tinh" },
-  { name: "Hoa Cái", freq: "2/4 trụ", desc: "Duyên nghệ thuật, tâm linh, đời sống nội tâm sâu — cùng nhóm ý nghĩa với Thái Cực.", nature: "tot" },
-  { name: "Đức Quý Nhân", freq: "2/4 trụ", desc: "Sao lành — thường được người khác giúp đỡ, gặp dữ hóa lành.", nature: "tot" },
-  { name: "Tú Quý Nhân", freq: "2/4 trụ", desc: "Một loại quý nhân khác — sao lành, gặp dữ hóa lành.", nature: "tot" },
-  { name: "Học Đường", freq: "Năm", desc: "Thông minh, hiếu học.", nature: "tot" },
-  { name: "Lộc Thần", freq: "Năm", desc: "Ứng đúng cách Kiến Lộc — tài lộc ổn định.", nature: "tot" },
-  { name: "Quốc Ấn", freq: "Năm", desc: "Duyên quyền lực, địa vị \"chính danh\".", nature: "tot" },
-  { name: "Kiếp Sát", freq: "Năm", desc: "Đề phòng mất mát/hao tài/tai họa bất ngờ.", nature: "xau" },
-  { name: "Lưu Hà Sát", freq: "Năm", desc: "Cẩn trọng tai nạn liên quan nước, dao kéo, phẫu thuật.", nature: "xau" },
-  { name: "Phúc Tinh", freq: "Năm", desc: "Phúc đức, hóa giải hung sát.", nature: "tot" },
-  { name: "Khôi Canh", freq: "Tháng", desc: "Cương trực, quyết đoán, đôi khi cứng nhắc.", nature: "trung-tinh" },
-  { name: "Nguyệt Đức, Thiên Đức", freq: "Tháng", desc: "Hai sao lành bậc nhất, giảm nhẹ đáng kể ảnh hưởng tiêu cực từ Kiếp Sát, Lưu Hà Sát.", nature: "tot" },
+  { name: "Học Đường", freq: "Năm", desc: "Sao chủ về học hành, thi cử, thông minh, hiếu học. Người có Học Đường thường có duyên với trường lớp, sách vở, dễ đạt thành tích trong học tập.", nature: "tot" },
+  { name: "Kiếp Sát", freq: "Năm", desc: "Sao hung — chủ về mất mát, hao tài, tai họa bất ngờ. Cần cẩn trọng trong các vấn đề liên quan đến tiền bạc, hợp đồng, đi lại xa.", nature: "xau" },
+  { name: "Lộc Thần", freq: "Năm", desc: "Sao cát — ứng với cách Kiến Lộc, chủ về tài lộc ổn định, cuộc sống no đủ, có lộc từ chính bản thân mình tạo ra.", nature: "tot" },
+  { name: "Lưu Hà Sát", freq: "Năm", desc: "Sao hung — cần cẩn trọng tai nạn liên quan đến nước, dao kéo, phẫu thuật. Đi lại đường thủy hoặc vùng sông nước nên thận trọng.", nature: "xau" },
+  { name: "Phúc Tinh", freq: "Năm", desc: "Sao cát — chủ về phúc đức, may mắn, có khả năng hóa giải hung sát. Người có Phúc Tinh thường được tổ tiên phù hộ, gặp dữ hóa lành.", nature: "tot" },
+  { name: "Quốc Ấn", freq: "Năm", desc: "Sao cát — chủ về quyền lực, địa vị 'chính danh'. Có duyên với công việc nhà nước, cơ quan chính phủ, hoặc các tổ chức lớn.", nature: "tot" },
+  { name: "Đức Quý Nhân", freq: "2/4 trụ", desc: "Sao cát — chủ về việc được người khác giúp đỡ, gặp dữ hóa lành. Quý nhân phù trợ đúng lúc, thường xuất hiện khi gặp khó khăn.", nature: "tot" },
+  { name: "Hoa Cái", freq: "2/4 trụ", desc: "Sao cát — chủ về duyên nghệ thuật, tâm linh, đời sống nội tâm sâu sắc. Người có Hoa Cái thường có năng khiếu đặc biệt về nghệ thuật hoặc nghiên cứu.", nature: "tot" },
+  { name: "Hồng Diễm", freq: "3/4 trụ", desc: "Sao đào hoa phụ — chủ về sức hút ngoại hình, dễ có duyên tình cảm. Tuy nhiên cần tiết chế để tránh thị phi, đặc biệt khi kết hợp cùng Quả Tú.", nature: "trung-tinh" },
+  { name: "Khôi Canh", freq: "Tháng", desc: "Sao chủ về tính cách cương trực, quyết đoán, đôi khi cứng nhắc. Có tài năng lãnh đạo nhưng cần mềm dẻo hơn trong giao tiếp để tránh xung đột.", nature: "trung-tinh" },
+  { name: "Nguyệt Đức", freq: "Tháng", desc: "Sao cát bậc nhất — cùng với Thiên Đức tạo thành cặp sao lành mạnh mẽ, giúp giảm nhẹ đáng kể ảnh hưởng tiêu cực từ các hung sát khác.", nature: "tot" },
+  { name: "Thiên Đức", freq: "Tháng", desc: "Sao cát bậc nhất — chủ về phúc đức trời ban, giúp hóa giải tai họa, bảo vệ bản mệnh khỏi những điều xấu.", nature: "tot" },
+  { name: "Quả Tú", freq: "3/4 trụ", desc: "Sao chủ về sự cô đơn — nhắc nhở cần chủ động vun đắp các mối quan hệ, tránh khép kín trong tình cảm và quan hệ con cái.", nature: "xau" },
+  { name: "Tú Quý Nhân", freq: "2/4 trụ", desc: "Sao cát — một loại quý nhân, chủ về việc gặp dữ hóa lành, được người khác giúp đỡ vào những lúc khó khăn.", nature: "tot" },
+  { name: "Thái Cực", freq: "3/4 trụ", desc: "Sao quý — liên quan đến học thuật, triết lý, tôn giáo, Dịch lý. Có duyên với nghiên cứu chuyên sâu và minh triết.", nature: "tot" },
+  { name: "Thiên La", freq: "4/4 trụ", desc: "Sao hung bậc nhất — chủ về bó buộc, trắc trở, hay gặp cản trở, thị phi, kiện tụng. Cộng hưởng trực tiếp với Tam Thìn Tự Hình, cũng gắn với ý nghĩa tu tâm, khắc kỷ nếu biết chuyển hóa.", nature: "xau" },
 ];
 
 export const thanSatSummary =
