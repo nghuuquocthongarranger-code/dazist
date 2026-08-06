@@ -1,7 +1,4 @@
-import { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
-
-const TuViHero3D = lazy(() => import("../TuViHero3D").then((m) => ({ default: m.TuViHero3D })));
 
 export function TuViHero() {
   return (
@@ -32,17 +29,6 @@ export function TuViHero() {
           Lá số 12 cung — chạm vào từng cung trên bàn cờ để xem sao và luận giải.
         </motion.p>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-xs sm:max-w-sm mx-auto h-[260px] sm:h-[320px] mt-6"
-      >
-        <Suspense fallback={<div className="absolute inset-0" />}>
-          <TuViHero3D />
-        </Suspense>
-      </motion.div>
     </section>
   );
 }
