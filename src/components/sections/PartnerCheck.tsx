@@ -95,8 +95,9 @@ function PillarPicker({
 
 export function PartnerCheck() {
   const [gender, setGender] = useState<Gender>("nam");
-  const [currentAge, setCurrentAge] = useState("");
-  const [startAge, setStartAge] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [startAgeYears, setStartAgeYears] = useState("");
+  const [startAgeMonths, setStartAgeMonths] = useState("");
   const [yearP, setYearP] = useState<CanChiPair>(EMPTY_PAIR);
   const [monthP, setMonthP] = useState<CanChiPair>(EMPTY_PAIR);
   const [dayP, setDayP] = useState<CanChiPair>(EMPTY_PAIR);
@@ -107,14 +108,20 @@ export function PartnerCheck() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const ageNum = Number(currentAge);
-    const startAgeNum = Number(startAge);
+    const byNum = Number(birthYear);
+    const startYearsNum = Number(startAgeYears);
+    const startMonthsNum = startAgeMonths ? Number(startAgeMonths) : 0;
     const hasYear = yearP.can && yearP.chi;
     const hasMonth = monthP.can && monthP.chi;
     const hasDay = dayP.can && dayP.chi;
     const hasHour = hourP.can && hourP.chi;
-    if (!currentAge || ageNum < 0 || ageNum > 120 || !startAge || startAgeNum < 0 || startAgeNum > 20 || !hasYear || !hasMonth || !hasDay) {
-      setError("Vui lòng nhập đủ Tuổi hiện tại, Tuổi khởi vận, và chọn đủ Can + Chi cho Trụ Năm / Tháng / Ngày.");
+    if (
+      !birthYear || byNum < 1900 || byNum > 2100 ||
+      !startAgeYears || startYearsNum < 0 || startYearsNum > 20 ||
+      startMonthsNum < 0 || startMonthsNum > 11 ||
+      !hasYear || !hasMonth || !hasDay
+    ) {
+      setError("Vui lòng nhập đủ Năm sinh, Tuổi khởi vận (năm, tháng từ 0–11), và chọn đủ Can + Chi cho Trụ Năm / Tháng / Ngày.");
       setResult(null);
       return;
     }
@@ -122,8 +129,9 @@ export function PartnerCheck() {
       setResult(
         evaluatePartnerManual({
           gender,
-          currentAge: ageNum,
-          startAge: startAgeNum,
+          birthYear: byNum,
+          startAgeYears: startYearsNum,
+          startAgeMonths: startMonthsNum,
           year: yearP,
           month: monthP,
           day: dayP,
@@ -144,12 +152,12 @@ export function PartnerCheck() {
         <SectionHeading
           eyebrow="Bát Tự đối tác"
           title="Người này hợp tác với bạn có lợi không?"
-          subtitle="Nhập trực tiếp Tứ Trụ (Can Chi), Giới tính, Tuổi hiện tại và Tuổi khởi vận mà bạn đã biết của đối tác — không suy từ ngày Dương lịch để tránh sai lệch — nhằm xem năm nay và Đại Vận hiện tại có thuận lợi cho họ không."
+          subtitle="Nhập trực tiếp Tứ Trụ (Can Chi), Giới tính, Năm sinh và Tuổi khởi vận mà bạn đã biết của đối tác — không suy từ ngày Dương lịch để tránh sai lệch — nhằm xem năm nay và Đại Vận hiện tại có thuận lợi cho họ không."
         />
 
         <GlassCard>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs text-gold-soft mb-1.5">Giới tính</label>
                 <select
@@ -162,33 +170,45 @@ export function PartnerCheck() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gold-soft mb-1.5">Tuổi hiện tại</label>
+                <label className="block text-xs text-gold-soft mb-1.5">Năm sinh (Dương lịch)</label>
                 <input
                   type="number"
-                  value={currentAge}
-                  onChange={(e) => setCurrentAge(e.target.value)}
-                  placeholder="vd. 28"
-                  min={0}
-                  max={120}
-                  className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px]"
-                />
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-xs text-gold-soft mb-1.5">Tuổi khởi vận</label>
-                <input
-                  type="number"
-                  value={startAge}
-                  onChange={(e) => setStartAge(e.target.value)}
-                  placeholder="vd. 5"
-                  min={0}
-                  max={20}
+                  value={birthYear}
+                  onChange={(e) => setBirthYear(e.target.value)}
+                  placeholder="vd. 1998"
+                  min={1900}
+                  max={2100}
                   className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px]"
                 />
               </div>
             </div>
-            <p className="text-[11px] text-white/40 -mt-2 leading-relaxed">
-              Tuổi khởi vận là tuổi đối tác bắt đầu bước vào Đại Vận đầu tiên theo lá số gốc của họ (ví dụ: "khởi vận lúc 5 tuổi") — nhập đúng số này thay vì để hệ thống ước lượng để tránh sai lệch thời điểm từng giai đoạn 10 năm.
-            </p>
+
+            <div>
+              <label className="block text-xs text-gold-soft mb-1.5">Tuổi khởi vận (nhập Đại Vận đầu tiên)</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="number"
+                  value={startAgeYears}
+                  onChange={(e) => setStartAgeYears(e.target.value)}
+                  placeholder="Năm, vd. 7"
+                  min={0}
+                  max={20}
+                  className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px]"
+                />
+                <input
+                  type="number"
+                  value={startAgeMonths}
+                  onChange={(e) => setStartAgeMonths(e.target.value)}
+                  placeholder="Tháng, vd. 6"
+                  min={0}
+                  max={11}
+                  className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px]"
+                />
+              </div>
+              <p className="text-[11px] text-white/40 mt-1.5 leading-relaxed">
+                Tuổi đối tác bắt đầu bước vào Đại Vận đầu tiên theo lá số gốc của họ, theo đúng cách nói truyền thống "X tuổi Y tháng" (ví dụ: khởi vận lúc 7 tuổi 6 tháng) — nhập đúng số này thay vì để hệ thống ước lượng, để tránh sai lệch thời điểm từng giai đoạn 10 năm.
+              </p>
+            </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <PillarPicker label="Trụ Năm" pair={yearP} onChange={setYearP} />
@@ -269,10 +289,10 @@ export function PartnerCheck() {
                   </div>
 
                   <p className="text-xs uppercase tracking-wider text-gold/70 mb-2">
-                    8 Đại Vận ({result.daiVanThuan ? "Thuận hành" : "Nghịch hành"}, tính từ Trụ Tháng, khởi vận lúc {result.startAge} tuổi theo bạn nhập)
+                    8 Đại Vận ({result.daiVanThuan ? "Thuận hành" : "Nghịch hành"}, tính từ Trụ Tháng, khởi vận lúc {result.startAgeLabel} theo bạn nhập)
                   </p>
                   {result.currentDaiVanIndex === -1 && (
-                    <p className="text-xs text-white/50 italic mb-2">Đối tác chưa nhập Đại Vận đầu tiên (hiện dưới {result.startAge} tuổi).</p>
+                    <p className="text-xs text-white/50 italic mb-2">Đối tác chưa nhập Đại Vận đầu tiên (hiện dưới {result.startAgeLabel}).</p>
                   )}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {result.daiVan.map((dv, i) => (

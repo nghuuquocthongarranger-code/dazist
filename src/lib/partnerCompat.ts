@@ -18,11 +18,13 @@ export type Gender = "nam" | "nu";
 
 export interface PartnerInput {
   gender: Gender;
-  /** Tuổi hiện tại (thực tế) của đối tác — dùng để xác định họ đang ở giai đoạn Đại Vận nào. */
-  currentAge: number;
+  /** Năm sinh Dương lịch của đối tác — dùng để tự tính tuổi hiện tại, xác định họ đang ở giai đoạn Đại Vận nào. */
+  birthYear: number;
   /** Tuổi nhập Đại Vận đầu tiên (khởi vận) theo lá số gốc của đối tác — người dùng tự biết/tự tra,
-   * KHÔNG suy ước lượng từ tuổi 1 vì mỗi người nhập vận ở tuổi khác nhau tùy khoảng cách tới tiết khí lúc sinh. */
-  startAge: number;
+   * KHÔNG suy ước lượng từ tuổi 1 vì mỗi người nhập vận ở tuổi khác nhau tùy khoảng cách tới tiết khí lúc sinh.
+   * Có cả phần năm và phần tháng vì cách nói truyền thống luôn là "X tuổi Y tháng" (ví dụ 7 tuổi 6 tháng). */
+  startAgeYears: number;
+  startAgeMonths: number;
   year: CanChiPair;
   month: CanChiPair;
   day: CanChiPair;
@@ -130,6 +132,8 @@ const PERIOD_LABEL: Record<"dung" | "hy" | "ky" | "binh-thuong", string> = {
 export interface DaiVanPeriod {
   pillar: string;
   ageRange: [number, number];
+  /** Tuổi bắt đầu giai đoạn tính chính xác theo tháng (dùng nội bộ để xác định giai đoạn hiện tại), ví dụ 7.5 = 7 tuổi 6 tháng. */
+  periodStart: number;
   role: "dung" | "hy" | "ky" | "binh-thuong";
 }
 
@@ -150,7 +154,7 @@ export interface PartnerEvaluation {
   currentYearPillar: string;
   currentYearRole: "dung" | "hy" | "ky" | "binh-thuong";
   currentYearLabel: string;
-  startAge: number;
+  startAgeLabel: string;
   daiVan: DaiVanPeriod[];
   /** -1 nghĩa là đối tác chưa nhập Đại Vận đầu tiên (còn nhỏ hơn tuổi khởi vận). */
   currentDaiVanIndex: number;
@@ -279,22 +283,24 @@ export function evaluatePartnerManual(input: PartnerInput): PartnerEvaluation {
   const yearPolarity = CAN.find((c) => c.name === input.year.can)!.polarity;
   const daiVanThuan = (input.gender === "nam" && yearPolarity === "duong") || (input.gender === "nu" && yearPolarity === "am");
   const step = daiVanThuan ? 1 : -1;
-  const startAge = Math.max(0, Math.round(input.startAge));
+  const startAgeDecimal = Math.max(0, input.startAgeYears + input.startAgeMonths / 12);
   const daiVan: DaiVanPeriod[] = Array.from({ length: 8 }, (_, i) => {
     const p = stepPillar(input.month, step * (i + 1));
-    const rangeStart = startAge + i * 10;
+    const periodStart = startAgeDecimal + i * 10;
+    const rangeStartDisplay = Math.round(periodStart);
     const role = roleOfElement(canElement(p.can), own);
-    return { pillar: `${p.can} ${p.chi}`, ageRange: [rangeStart, rangeStart + 9] as [number, number], role };
+    return { pillar: `${p.can} ${p.chi}`, ageRange: [rangeStartDisplay, rangeStartDisplay + 9] as [number, number], periodStart, role };
   });
-  const age = Math.round(input.currentAge);
+  const age = currentYear - Math.round(input.birthYear) + 1;
   let currentDaiVanIndex: number;
-  if (age < startAge) {
+  if (age < startAgeDecimal) {
     currentDaiVanIndex = -1;
   } else {
-    const idx = daiVan.findIndex((dv) => age >= dv.ageRange[0] && age <= dv.ageRange[1]);
+    const idx = daiVan.findIndex((dv) => age >= dv.periodStart && age < dv.periodStart + 10);
     currentDaiVanIndex = idx === -1 ? 7 : idx;
   }
   const daiVanCurrentRole = currentDaiVanIndex >= 0 ? daiVan[currentDaiVanIndex].role : null;
+  const startAgeLabel = input.startAgeMonths > 0 ? `${input.startAgeYears} tuổi ${input.startAgeMonths} tháng` : `${input.startAgeYears} tuổi`;
 
   const prosCons = buildProsCons({
     pillars,
@@ -317,7 +323,7 @@ export function evaluatePartnerManual(input: PartnerInput): PartnerEvaluation {
     currentYearPillar: currentYearPillarObj.label,
     currentYearRole,
     currentYearLabel: PERIOD_LABEL[currentYearRole],
-    startAge,
+    startAgeLabel,
     daiVan,
     currentDaiVanIndex,
     daiVanThuan,
