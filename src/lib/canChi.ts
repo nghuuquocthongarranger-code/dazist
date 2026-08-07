@@ -307,6 +307,39 @@ export function getSolarTerm(date: Date): SolarTermInfo {
   return { name: SOLAR_TERMS[index], longitude: elon, index };
 }
 
+export interface TietKhiDetail {
+  tietName: string;
+  start: Date;
+  nextTietName: string;
+  nextStart: Date;
+  /** Vị trí sinh trong tiết: đầu (0–1/3), giữa (1/3–2/3), cuối (2/3–1) tính theo thời lượng thực của tiết đó. */
+  position: "đầu" | "giữa" | "cuối";
+}
+
+/** Xác định chính xác tiết khí lúc sinh (tên tiết, mốc bắt đầu/kết thúc, sinh vào đầu/giữa/cuối tiết) —
+ * cần ngày giờ sinh chính xác nên chỉ dùng khi có đủ dữ liệu (không suy được từ Can Chi nhập tay). */
+export function getTietKhiDetail(date: Date): TietKhiDetail {
+  const current = getSolarTerm(date);
+  const startLon = current.index * 15;
+  const nextIndex = (current.index + 1) % 24;
+  const nextLon = nextIndex * 15;
+
+  const searchStart = new Date(date.getTime() - 20 * 24 * 60 * 60 * 1000);
+  const startResult = Astronomy.SearchSunLongitude(startLon, searchStart, 40);
+  if (!startResult) throw new Error("Không tìm được thời điểm bắt đầu tiết khí.");
+  const nextResult = Astronomy.SearchSunLongitude(nextLon, date, 40);
+  if (!nextResult) throw new Error("Không tìm được thời điểm tiết khí kế tiếp.");
+
+  const start = startResult.date;
+  const nextStart = nextResult.date;
+  const totalMs = nextStart.getTime() - start.getTime();
+  const elapsedMs = date.getTime() - start.getTime();
+  const ratio = totalMs > 0 ? elapsedMs / totalMs : 0;
+  const position: TietKhiDetail["position"] = ratio < 1 / 3 ? "đầu" : ratio < 2 / 3 ? "giữa" : "cuối";
+
+  return { tietName: current.name, start, nextTietName: SOLAR_TERMS[nextIndex], nextStart, position };
+}
+
 function lapXuanOf(calendarYear: number): Date {
   const searchStart = new Date(Date.UTC(calendarYear, 0, 15));
   const result = Astronomy.SearchSunLongitude(315, searchStart, 40);

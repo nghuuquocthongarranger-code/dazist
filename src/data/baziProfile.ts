@@ -91,6 +91,7 @@ export const bodyStrength = {
   paragraphs: [
     "Nhật Chủ Mậu (Thổ) ở thế THÂN CỰC VƯỢNG: lực phe sinh/trợ (Tỉ Kiếp + Ấn) chiếm tới ~58.8% tổng khí toàn cục — chủ yếu do ba trụ Thìn liên tiếp cộng dồn khối Thổ rất lớn, cộng thêm Bính Hỏa (Thiên Ấn) sinh trợ thêm.",
     "Cách cục: Kiến Lộc — Tàng Can chính khí của Chi Tháng (Thìn) là Mậu, trùng Tỉ Kiên với Nhật Chủ. Thân vượng ở mức cực cao đòi hỏi phải có lực Khắc–Tiết–Hao đủ mạnh mới cân bằng được cách cục, nếu không dễ rơi vào thế \"vượng cực vô dụng\": bảo thủ, ỳ trệ, khó tiếp thu.",
+    "Tiết khí lúc sinh: sinh 08:20 ngày 05/05/2001, đúng vào tiết Cốc Vũ (tiết khí thứ hai của tháng Thìn), và tiết Cốc Vũ kết thúc lúc 17:44 cùng ngày để chuyển sang Lập Hạ (mở đầu tháng Tỵ) — tức sinh vào đoạn cuối của tiết Cốc Vũ, chỉ còn cách ranh giới sang tháng Tỵ chưa đầy 10 tiếng. Vẫn trọn vẹn nằm trong tháng Thìn nên đắc lệnh không đổi, nhưng sinh sát vào cuối tiết cho thấy khí Thổ tuy đã vào giai đoạn \"mộ khí\" (khí bắt đầu thu liễm, chuẩn bị chuyển mùa) song vẫn đủ mạnh để làm nền, đồng thời cũng lý giải vì sao Thiên Ấn Bính Hỏa (khí đang lên khi tháng Thìn sắp hết, chuẩn bị bước sang mùa Hỏa) sinh trợ thêm được cho khối Thổ vốn đã rất vượng.",
   ],
 };
 

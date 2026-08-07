@@ -98,6 +98,7 @@ export function PartnerCheck() {
   const [birthYear, setBirthYear] = useState("");
   const [startAgeYears, setStartAgeYears] = useState("");
   const [startAgeMonths, setStartAgeMonths] = useState("");
+  const [preciseBirthDateTime, setPreciseBirthDateTime] = useState("");
   const [yearP, setYearP] = useState<CanChiPair>(EMPTY_PAIR);
   const [monthP, setMonthP] = useState<CanChiPair>(EMPTY_PAIR);
   const [dayP, setDayP] = useState<CanChiPair>(EMPTY_PAIR);
@@ -132,6 +133,7 @@ export function PartnerCheck() {
           birthYear: byNum,
           startAgeYears: startYearsNum,
           startAgeMonths: startMonthsNum,
+          preciseBirthDateTime: preciseBirthDateTime ? new Date(preciseBirthDateTime) : undefined,
           year: yearP,
           month: monthP,
           day: dayP,
@@ -210,6 +212,19 @@ export function PartnerCheck() {
               </p>
             </div>
 
+            <div>
+              <label className="block text-xs text-gold-soft mb-1.5">Ngày giờ sinh chính xác (không bắt buộc)</label>
+              <input
+                type="datetime-local"
+                value={preciseBirthDateTime}
+                onChange={(e) => setPreciseBirthDateTime(e.target.value)}
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-3 text-white outline-none focus:border-gold focus:ring-2 focus:ring-gold/40 transition min-h-[44px] [color-scheme:dark]"
+              />
+              <p className="text-[11px] text-white/40 mt-1.5 leading-relaxed">
+                Chỉ dùng để tính Tiết Khí lúc sinh (đầu/giữa/cuối tiết) — hoàn toàn KHÔNG ảnh hưởng tới Tứ Trụ, Tứ Trụ vẫn lấy đúng theo Can Chi bạn chọn bên dưới. Để trống nếu không biết giờ sinh chính xác.
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <PillarPicker label="Trụ Năm" pair={yearP} onChange={setYearP} />
               <PillarPicker label="Trụ Tháng" pair={monthP} onChange={setMonthP} />
@@ -281,6 +296,12 @@ export function PartnerCheck() {
                     (ước tính, phe sinh/trợ ~{result.ownAnalysis.supportPercent}%). Dụng Thần: <span className="text-gold-soft">{ELEMENT_LABEL[result.ownAnalysis.dungElement]}</span>, Hỷ Thần:{" "}
                     <span className="text-moc">{ELEMENT_LABEL[result.ownAnalysis.hyElement]}</span>.
                   </p>
+
+                  {result.tietKhi && (
+                    <p className="text-xs text-white/50 mb-4 leading-relaxed">
+                      Tiết khí lúc sinh: sinh vào tiết <span className="text-gold-soft">{result.tietKhi.tietName}</span>, ở khoảng <span className="text-gold-soft">{result.tietKhi.position}</span> tiết (trước khi chuyển sang tiết {result.tietKhi.nextTietName}) — góp phần xác nhận thêm mức độ đắc lệnh của Trụ Tháng.
+                    </p>
+                  )}
 
                   <div className={`rounded-xl px-4 py-3 border mb-5 ${PERIOD_TONE[result.currentYearRole]}`}>
                     <p className="text-sm font-semibold">
