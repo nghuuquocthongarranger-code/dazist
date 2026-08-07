@@ -427,3 +427,100 @@ export function evaluateDayFull(date: Date): FullDayVerdict {
     summary: day.summary,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Trụ Giờ — dùng cho tính năng xem Bát Tự đối tác (Năm/Tháng/Ngày bắt buộc,
+// Giờ tùy chọn). Quy tắc "Ngũ Thử Độn": Can Giờ Tý suy từ Can Ngày.
+// ---------------------------------------------------------------------------
+
+/** Can của Giờ Tý ứng với từng Can Ngày (Ngũ Thử Độn): Giáp/Kỷ→Giáp, Ất/Canh→Bính,
+ * Bính/Tân→Mậu, Đinh/Nhâm→Canh, Mậu/Quý→Nhâm. */
+const TY_HOUR_CAN_START: Record<number, number> = { 0: 0, 5: 0, 1: 2, 6: 2, 2: 4, 7: 4, 3: 6, 8: 6, 4: 8, 9: 8 };
+
+export interface HourPillar {
+  canIndex: number;
+  chiIndex: number;
+  can: CanInfo;
+  chi: ChiInfo;
+  label: string;
+}
+
+/** Trụ Giờ từ Can Ngày (canIndex 0-9, xem CAN) và Chi Giờ (một trong 12 CHI, ví dụ "Thân" cho 15h-17h). */
+export function getHourPillar(dayCanIndex: number, hourChiName: string): HourPillar {
+  const chiIndex = CHI.findIndex((c) => c.name === hourChiName);
+  if (chiIndex === -1) throw new Error(`Chi giờ không hợp lệ: ${hourChiName}`);
+  const tyCanIndex = TY_HOUR_CAN_START[((dayCanIndex % 10) + 10) % 10];
+  const canIndex = (tyCanIndex + chiIndex) % 10;
+  const can = CAN[canIndex];
+  const chi = CHI[chiIndex];
+  return { canIndex, chiIndex, can, chi, label: `${can.name} ${chi.name}` };
+}
+
+/** 12 khung giờ Địa Chi truyền thống, dùng cho ô chọn giờ sinh (giờ địa phương). */
+export const HOUR_CHI_RANGES: { chi: string; range: string }[] = [
+  { chi: "Tý", range: "23h–1h" },
+  { chi: "Sửu", range: "1h–3h" },
+  { chi: "Dần", range: "3h–5h" },
+  { chi: "Mão", range: "5h–7h" },
+  { chi: "Thìn", range: "7h–9h" },
+  { chi: "Tỵ", range: "9h–11h" },
+  { chi: "Ngọ", range: "11h–13h" },
+  { chi: "Mùi", range: "13h–15h" },
+  { chi: "Thân", range: "15h–17h" },
+  { chi: "Dậu", range: "17h–19h" },
+  { chi: "Tuất", range: "19h–21h" },
+  { chi: "Hợi", range: "21h–23h" },
+];
+
+// ---------------------------------------------------------------------------
+// Quan hệ 12 Địa Chi — Lục Hợp / Tam Hợp cục / Lục Xung / Lục Hại — dùng để
+// xem tuổi hợp/khắc giữa hai người (ví dụ Ngày Chi bản thân với Ngày Chi đối tác).
+// ---------------------------------------------------------------------------
+
+export const LUC_HOP: Record<string, string> = {
+  Tý: "Sửu", Sửu: "Tý", Dần: "Hợi", Hợi: "Dần", Mão: "Tuất", Tuất: "Mão",
+  Thìn: "Dậu", Dậu: "Thìn", Tỵ: "Thân", Thân: "Tỵ", Ngọ: "Mùi", Mùi: "Ngọ",
+};
+
+export const TAM_HOP: { group: string[]; element: Element; label: string }[] = [
+  { group: ["Thân", "Tý", "Thìn"], element: "thuy", label: "Thủy cục" },
+  { group: ["Tỵ", "Dậu", "Sửu"], element: "kim", label: "Kim cục" },
+  { group: ["Dần", "Ngọ", "Tuất"], element: "hoa", label: "Hỏa cục" },
+  { group: ["Hợi", "Mão", "Mùi"], element: "moc", label: "Mộc cục" },
+];
+
+export const LUC_XUNG: Record<string, string> = {
+  Tý: "Ngọ", Ngọ: "Tý", Sửu: "Mùi", Mùi: "Sửu", Dần: "Thân", Thân: "Dần",
+  Mão: "Dậu", Dậu: "Mão", Thìn: "Tuất", Tuất: "Thìn", Tỵ: "Hợi", Hợi: "Tỵ",
+};
+
+export const LUC_HAI: Record<string, string> = {
+  Tý: "Mùi", Mùi: "Tý", Sửu: "Ngọ", Ngọ: "Sửu", Dần: "Tỵ", Tỵ: "Dần",
+  Mão: "Thìn", Thìn: "Mão", Thân: "Hợi", Hợi: "Thân", Dậu: "Tuất", Tuất: "Dậu",
+};
+
+export type ChiRelationType = "luc-hop" | "tam-hop" | "luc-xung" | "luc-hai" | "khong-ro-ret";
+
+export interface ChiRelationship {
+  type: ChiRelationType;
+  label: string;
+  desc: string;
+}
+
+/** So sánh quan hệ giữa hai Địa Chi (ví dụ Ngày Chi của hai người) theo Lục Hợp/Tam Hợp/Lục Xung/Lục Hại. */
+export function chiRelationship(chiA: string, chiB: string): ChiRelationship {
+  if (LUC_HOP[chiA] === chiB) {
+    return { type: "luc-hop", label: "Lục Hợp", desc: "Hai Chi hợp thành một cặp gắn kết tự nhiên — dễ đồng cảm, hỗ trợ nhau nhịp nhàng như một cặp đôi ăn ý." };
+  }
+  if (LUC_XUNG[chiA] === chiB) {
+    return { type: "luc-xung", label: "Lục Xung (Tứ Hành Xung)", desc: "Hai Chi đối xung trực tiếp — quan điểm/tính cách dễ va chạm, cần thẳng thắn trao đổi và tôn trọng khác biệt để tránh xung đột kéo dài." };
+  }
+  if (LUC_HAI[chiA] === chiB) {
+    return { type: "luc-hai", label: "Lục Hại", desc: "Quan hệ có phần \"hại\" ngầm — hợp tác bề ngoài có thể ổn nhưng dễ nảy sinh hiểu lầm/rạn nứt âm thầm nếu thiếu minh bạch." };
+  }
+  const tamHop = TAM_HOP.find((t) => t.group.includes(chiA) && t.group.includes(chiB));
+  if (tamHop) {
+    return { type: "tam-hop", label: `Tam Hợp (${tamHop.label})`, desc: `Cùng nằm trong bộ Tam Hợp hóa ${ELEMENT_LABEL[tamHop.element]} — hợp nhau ở mục tiêu/chí hướng dài hạn, phối hợp tốt trong công việc nhóm.` };
+  }
+  return { type: "khong-ro-ret", label: "Không hợp/xung rõ rệt", desc: "Không rơi vào tổ hợp Hợp/Xung/Hại kinh điển nào — quan hệ trung tính, tốt/xấu phụ thuộc chủ yếu vào Ngũ Hành Dụng/Hỷ/Kỵ của từng người." };
+}

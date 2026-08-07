@@ -10,6 +10,7 @@ import { TarotPage } from "./pages/TarotPage";
 import { TarotLookupPage } from "./pages/TarotLookupPage";
 import { TuViPage } from "./pages/TuViPage";
 import { SynthesisPage } from "./pages/SynthesisPage";
+import { PartnerPage } from "./pages/PartnerPage";
 import { Footer } from "./components/sections/Summary";
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <Route path="/tarot/tra-soat" element={<TarotLookupPage />} />
             <Route path="/tu-vi" element={<TuViPage />} />
             <Route path="/tong-hop" element={<SynthesisPage />} />
+            <Route path="/doi-tac" element={<PartnerPage />} />
           </Routes>
         </main>
         <Footer />

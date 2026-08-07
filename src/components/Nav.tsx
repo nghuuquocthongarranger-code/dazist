@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: "/tarot", label: "Tarot" },
   { to: "/tu-vi", label: "Tử Vi" },
   { to: "/tong-hop", label: "Tổng Hợp" },
+  { to: "/doi-tac", label: "Xem Đối Tác" },
 ];
 
 export function Nav() {
