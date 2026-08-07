@@ -289,7 +289,7 @@ function BodySection() {
         </div>
         <div className="mt-4 space-y-3">
           {dungHyKy.map((d) => (
-            <div key={d.title} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: ELEMENT_COLOR[d.colorElement] + "18" }}>
+            <div key={`${d.title}-${d.colorElement}`} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: ELEMENT_COLOR[d.colorElement] + "18" }}>
               <span className="shrink-0 w-3 h-3 rounded-full mt-1.5" style={{ background: ELEMENT_COLOR[d.colorElement] }} />
               <div>
                 <p className="text-sm font-semibold text-white">{d.title}: {d.element}</p>

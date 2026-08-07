@@ -8,10 +8,8 @@ import {
   stepPillar,
   getYearPillar,
   getBaziYearNumber,
-  getTietKhiDetail,
   type CanChiPair,
   type ChiRelationship,
-  type TietKhiDetail,
 } from "./canChi";
 import { ELEMENT_ROLE, ELEMENT_LABEL, ROLE_LABEL, SINH, KHAC, type Element, type DungHyKy } from "./elements";
 import { fourPillars } from "../data/baziProfile";
@@ -27,9 +25,6 @@ export interface PartnerInput {
    * Có cả phần năm và phần tháng vì cách nói truyền thống luôn là "X tuổi Y tháng" (ví dụ 7 tuổi 6 tháng). */
   startAgeYears: number;
   startAgeMonths: number;
-  /** Ngày giờ sinh chính xác (không bắt buộc) — CHỈ dùng để tính Tiết Khí lúc sinh (đầu/giữa/cuối tiết),
-   * không dùng để suy ra Can Chi (Can Chi luôn lấy từ 4 trụ người dùng tự nhập ở trên để đảm bảo chính xác). */
-  preciseBirthDateTime?: Date;
   year: CanChiPair;
   month: CanChiPair;
   day: CanChiPair;
@@ -160,8 +155,6 @@ export interface PartnerEvaluation {
   currentYearRole: "dung" | "hy" | "ky" | "binh-thuong";
   currentYearLabel: string;
   startAgeLabel: string;
-  /** Chỉ có giá trị nếu người dùng nhập Ngày giờ sinh chính xác (tùy chọn). */
-  tietKhi?: TietKhiDetail;
   daiVan: DaiVanPeriod[];
   /** -1 nghĩa là đối tác chưa nhập Đại Vận đầu tiên (còn nhỏ hơn tuổi khởi vận). */
   currentDaiVanIndex: number;
@@ -308,7 +301,6 @@ export function evaluatePartnerManual(input: PartnerInput): PartnerEvaluation {
   }
   const daiVanCurrentRole = currentDaiVanIndex >= 0 ? daiVan[currentDaiVanIndex].role : null;
   const startAgeLabel = input.startAgeMonths > 0 ? `${input.startAgeYears} tuổi ${input.startAgeMonths} tháng` : `${input.startAgeYears} tuổi`;
-  const tietKhi = input.preciseBirthDateTime ? getTietKhiDetail(input.preciseBirthDateTime) : undefined;
 
   const prosCons = buildProsCons({
     pillars,
@@ -332,7 +324,6 @@ export function evaluatePartnerManual(input: PartnerInput): PartnerEvaluation {
     currentYearRole,
     currentYearLabel: PERIOD_LABEL[currentYearRole],
     startAgeLabel,
-    tietKhi,
     daiVan,
     currentDaiVanIndex,
     daiVanThuan,
