@@ -1,104 +1,328 @@
 import {
-  getYearPillar,
-  getMonthPillar,
-  getDayPillar,
-  getHourPillar,
-  getBaziYearNumber,
-  pillarPercent,
+  CAN,
+  CHI,
+  CHI_HIDDEN_CAN,
   chiRelationship,
-  tierFromPercent,
+  tenGodOf,
+  TEN_GOD_GROUP,
+  stepPillar,
+  getYearPillar,
+  getBaziYearNumber,
+  type CanChiPair,
   type ChiRelationship,
 } from "./canChi";
-import { ROLE_LABEL, ELEMENT_LABEL, type DungHyKy } from "./elements";
+import { ELEMENT_ROLE, ELEMENT_LABEL, ROLE_LABEL, SINH, KHAC, type Element, type DungHyKy } from "./elements";
 import { fourPillars } from "../data/baziProfile";
 
-export interface PartnerPillarResult {
-  label: string;
-  pillarLabel: string;
-  element: string;
-  percent: number;
-  role: DungHyKy;
+export type Gender = "nam" | "nu";
+
+export interface PartnerInput {
+  gender: Gender;
+  /** Tuổi hiện tại (thực tế) của đối tác — dùng để xác định họ đang ở giai đoạn Đại Vận nào. */
+  currentAge: number;
+  /** Tuổi nhập Đại Vận đầu tiên (khởi vận) theo lá số gốc của đối tác — người dùng tự biết/tự tra,
+   * KHÔNG suy ước lượng từ tuổi 1 vì mỗi người nhập vận ở tuổi khác nhau tùy khoảng cách tới tiết khí lúc sinh. */
+  startAge: number;
+  year: CanChiPair;
+  month: CanChiPair;
+  day: CanChiPair;
+  hour?: CanChiPair;
+}
+
+type TenGodGroup = "ty-kiep" | "an" | "thuc-thuong" | "tai" | "quan-sat";
+const ELEMENTS: Element[] = ["moc", "hoa", "tho", "kim", "thuy"];
+function sinhSourceOf(el: Element): Element {
+  return ELEMENTS.find((e) => SINH[e] === el)!;
+}
+function khacSourceOf(el: Element): Element {
+  return ELEMENTS.find((e) => KHAC[e] === el)!;
+}
+function canElement(name: string): Element {
+  return CAN.find((c) => c.name === name)!.element;
+}
+function chiElement(name: string): Element {
+  return CHI.find((c) => c.name === name)!.element;
+}
+
+export interface OwnChartAnalysis {
+  nhatChu: string;
+  nhatChuElement: Element;
+  verdict: "vuong" | "nhuoc";
+  supportPercent: number;
+  dungElement: Element;
+  hyElement: Element;
+  kyElements: Element[];
+}
+
+/** Tự luận Thân Vượng/Nhược và Dụng/Hỷ/Kỵ Thần cho MỘT lá số bất kỳ (không phải lá số cố định của
+ * chủ trang) — dùng heuristic đơn giản hoá: đếm trọng số Thiên Can + Tàng Can theo Thập Thần tổng quát,
+ * cộng thêm "thưởng điểm đắc lệnh" nếu Chi Tháng cùng hành hoặc sinh Nhật Chủ. Đây là ước tính hợp lý,
+ * không thay thế hoàn toàn cho một thầy Bát Tự luận chi tiết tay. */
+export function analyzeOwnChart(input: PartnerInput): OwnChartAnalysis {
+  const nhatChu = input.day.can;
+  const ncElement = canElement(nhatChu);
+
+  const canEntries = [input.year.can, input.month.can, ...(input.hour ? [input.hour.can] : [])];
+  const chiList = [input.year.chi, input.month.chi, input.day.chi, ...(input.hour ? [input.hour.chi] : [])];
+
+  const groupWeight: Record<TenGodGroup, number> = { "ty-kiep": 0, an: 0, "thuc-thuong": 0, tai: 0, "quan-sat": 0 };
+  let total = 0;
+  for (const can of canEntries) {
+    const group = TEN_GOD_GROUP[tenGodOf(nhatChu, can)];
+    groupWeight[group] += 1.0;
+    total += 1.0;
+  }
+  for (const chi of chiList) {
+    for (const h of CHI_HIDDEN_CAN[chi] ?? []) {
+      const group = TEN_GOD_GROUP[tenGodOf(nhatChu, h.can)];
+      groupWeight[group] += h.weight;
+      total += h.weight;
+    }
+  }
+
+  const support = groupWeight["ty-kiep"] + groupWeight.an;
+  const supportPercent = total > 0 ? Math.round((support / total) * 1000) / 10 : 50;
+
+  const monthElement = chiElement(input.month.chi);
+  let dacLenhBonus = 0;
+  if (monthElement === ncElement) dacLenhBonus = 12;
+  else if (SINH[monthElement] === ncElement) dacLenhBonus = 6;
+
+  const verdict: "vuong" | "nhuoc" = supportPercent + dacLenhBonus >= 50 ? "vuong" : "nhuoc";
+
+  const groupElement = (g: TenGodGroup): Element => {
+    switch (g) {
+      case "ty-kiep": return ncElement;
+      case "an": return sinhSourceOf(ncElement);
+      case "thuc-thuong": return SINH[ncElement];
+      case "tai": return KHAC[ncElement];
+      case "quan-sat": return khacSourceOf(ncElement);
+    }
+  };
+
+  let dungElement: Element, hyElement: Element, kyElements: Element[];
+  if (verdict === "vuong") {
+    const ranked = (["thuc-thuong", "tai", "quan-sat"] as TenGodGroup[]).sort((a, b) => groupWeight[b] - groupWeight[a]);
+    dungElement = groupElement(ranked[0]);
+    hyElement = groupElement(ranked[1]);
+    kyElements = [ncElement, sinhSourceOf(ncElement)];
+  } else {
+    const ranked = (["an", "ty-kiep"] as TenGodGroup[]).sort((a, b) => groupWeight[b] - groupWeight[a]);
+    dungElement = groupElement(ranked[0]);
+    hyElement = groupElement(ranked[1]);
+    kyElements = [SINH[ncElement], KHAC[ncElement], khacSourceOf(ncElement)];
+  }
+
+  return { nhatChu, nhatChuElement: ncElement, verdict, supportPercent, dungElement, hyElement, kyElements };
+}
+
+function roleOfElement(el: Element, own: OwnChartAnalysis): "dung" | "hy" | "ky" | "binh-thuong" {
+  if (el === own.dungElement) return "dung";
+  if (el === own.hyElement) return "hy";
+  if (own.kyElements.includes(el)) return "ky";
+  return "binh-thuong";
+}
+
+const PERIOD_LABEL: Record<"dung" | "hy" | "ky" | "binh-thuong", string> = {
+  dung: "Rất thuận lợi", hy: "Thuận lợi", "binh-thuong": "Bình thường", ky: "Bất lợi",
+};
+
+export interface DaiVanPeriod {
+  pillar: string;
+  ageRange: [number, number];
+  role: "dung" | "hy" | "ky" | "binh-thuong";
+}
+
+export interface ProsCons {
+  strengths: string[];
+  weaknesses: string[];
 }
 
 export interface PartnerEvaluation {
-  yearPillar: string;
-  monthPillar: string;
-  dayPillar: string;
-  hourPillar?: string;
-  pillars: PartnerPillarResult[];
-  percent: number;
-  tier: "rat-tot" | "tot" | "binh-thuong" | "xau";
-  tierLabel: string;
+  ownAnalysis: OwnChartAnalysis;
+  pillars: { label: string; pillarLabel: string; element: string; role: DungHyKy }[];
+  compatPercent: number;
+  compatTier: "rat-tot" | "tot" | "binh-thuong" | "xau";
+  compatTierLabel: string;
+  compatSummary: string;
   chiRelation: ChiRelationship;
-  summary: string;
+  currentYear: number;
+  currentYearPillar: string;
+  currentYearRole: "dung" | "hy" | "ky" | "binh-thuong";
+  currentYearLabel: string;
+  startAge: number;
+  daiVan: DaiVanPeriod[];
+  /** -1 nghĩa là đối tác chưa nhập Đại Vận đầu tiên (còn nhỏ hơn tuổi khởi vận). */
+  currentDaiVanIndex: number;
+  daiVanThuan: boolean;
+  prosCons: ProsCons;
 }
 
-const VERDICT_LABEL: Record<PartnerEvaluation["tier"], string> = {
-  "rat-tot": "Rất có lợi",
-  tot: "Có lợi",
-  "binh-thuong": "Trung tính — cần cẩn trọng",
-  xau: "Bất lợi",
+const COMPAT_TIER_LABEL: Record<PartnerEvaluation["compatTier"], string> = {
+  "rat-tot": "Rất có lợi cho bạn", tot: "Có lợi cho bạn", "binh-thuong": "Trung tính", xau: "Bất lợi cho bạn",
+};
+const COMPAT_SUMMARY: Record<PartnerEvaluation["compatTier"], string> = {
+  "rat-tot": "Ngũ Hành của người này phần lớn rơi vào Dụng/Hỷ Thần của bạn — hợp tác nhìn chung thuận lợi, dễ hỗ trợ nhau.",
+  tot: "Ngũ Hành của người này thiên về Dụng/Hỷ Thần nhiều hơn Kỵ Thần đối với bạn — hợp tác nhìn chung có lợi.",
+  "binh-thuong": "Ngũ Hành của người này khá cân bằng giữa lợi và hại đối với bạn — nên quan sát thêm qua thời gian.",
+  xau: "Ngũ Hành của người này thiên nhiều về Kỵ Thần đối với bạn — cần cân nhắc kỹ hoặc giữ khoảng cách vừa phải.",
 };
 
-const VERDICT_SUMMARY: Record<PartnerEvaluation["tier"], string> = {
-  "rat-tot": "Ngũ Hành của người này phần lớn rơi vào Dụng/Hỷ Thần của bạn — hợp tác/làm việc chung nhìn chung thuận lợi, dễ hỗ trợ nhau, nên chủ động gắn kết.",
-  tot: "Ngũ Hành của người này thiên về Dụng/Hỷ Thần nhiều hơn Kỵ Thần — hợp tác nhìn chung có lợi, mang lại giá trị tích cực cho bạn.",
-  "binh-thuong": "Ngũ Hành của người này khá cân bằng giữa lợi và hại — không rõ rệt nghiêng hẳn về phía nào, nên quan sát thêm qua thời gian và giữ ranh giới hợp lý khi hợp tác.",
-  xau: "Ngũ Hành của người này thiên nhiều về Kỵ Thần — hợp tác/gắn bó lâu dài dễ mang lại hao tổn, áp lực hoặc bất lợi cho bạn, nên cân nhắc kỹ hoặc giữ khoảng cách vừa phải.",
-};
+function buildProsCons(params: {
+  pillars: PartnerEvaluation["pillars"];
+  chiRelation: ChiRelationship;
+  currentYearRole: "dung" | "hy" | "ky" | "binh-thuong";
+  currentYearPillar: string;
+  daiVanCurrentRole: "dung" | "hy" | "ky" | "binh-thuong" | null;
+  compatTier: PartnerEvaluation["compatTier"];
+}): ProsCons {
+  const strengths: string[] = [];
+  const weaknesses: string[] = [];
 
-const dayCanWeight = 1.2;
-const dayChiWeight = 1.0;
-
-/** Đánh giá mức độ lợi/hại của một người khác (đối tác, bạn bè, đồng nghiệp...) đối với bản thân,
- * dựa trên Ngũ Hành Dụng/Hỷ/Kỵ Thần của chính lá số chủ trang. Chỉ cần Năm/Tháng/Ngày Dương lịch;
- * Giờ sinh (Chi Giờ) là tùy chọn, nếu có sẽ cho kết quả chính xác hơn. */
-export function evaluatePartner(year: number, month: number, day: number, hourChi?: string): PartnerEvaluation {
-  const date = new Date(Date.UTC(year, month - 1, day, 12, 0));
-
-  const dayPillar = getDayPillar(date);
-  const monthPillar = getMonthPillar(date);
-  const baziYear = getBaziYearNumber(date);
-  const yearPillar = getYearPillar(baziYear);
-  const hourPillar = hourChi ? getHourPillar(dayPillar.canIndex, hourChi) : undefined;
-
-  const dayResult = pillarPercent(dayPillar.can.element, dayPillar.chi.name, dayCanWeight, dayChiWeight);
-  const monthResult = pillarPercent(monthPillar.can.element, monthPillar.chi.name, 1.0, 0.9);
-  const yearResult = pillarPercent(yearPillar.can.element, yearPillar.chi.name, 0.7, 0.6);
-  const hourResult = hourPillar ? pillarPercent(hourPillar.can.element, hourPillar.chi.name, 0.6, 0.5) : undefined;
-
-  const pillars: PartnerPillarResult[] = [
-    { label: "Ngày", pillarLabel: dayPillar.label, element: ELEMENT_LABEL[dayPillar.can.element], percent: dayResult.percent, role: dayResult.canRole },
-    { label: "Tháng", pillarLabel: monthPillar.label, element: ELEMENT_LABEL[monthPillar.can.element], percent: monthResult.percent, role: monthResult.canRole },
-    { label: "Năm", pillarLabel: yearPillar.label, element: ELEMENT_LABEL[yearPillar.can.element], percent: yearResult.percent, role: yearResult.canRole },
-  ];
-  if (hourPillar && hourResult) {
-    pillars.push({ label: "Giờ", pillarLabel: hourPillar.label, element: ELEMENT_LABEL[hourPillar.can.element], percent: hourResult.percent, role: hourResult.canRole });
+  for (const p of params.pillars) {
+    if (p.role === "dung-than" || p.role === "hy-than") {
+      strengths.push(
+        `Trụ ${p.label} (${p.pillarLabel}, hành ${p.element}) là ${ROLE_LABEL[p.role]} của bạn — mang năng lượng hỗ trợ tích cực khi làm việc chung.`,
+      );
+    } else if (p.role === "ky-than") {
+      weaknesses.push(
+        `Trụ ${p.label} (${p.pillarLabel}, hành ${p.element}) là Kỵ Thần của bạn — dễ tạo áp lực/bất đồng, cần chú ý khi hợp tác liên quan tới hành này.`,
+      );
+    }
   }
 
-  // Trọng số: Ngày (Nhật Chủ đối tác) nặng nhất, rồi Tháng, Năm, Giờ (nếu có).
-  const weighted = hourResult
-    ? dayResult.percent * 0.42 + monthResult.percent * 0.28 + yearResult.percent * 0.18 + hourResult.percent * 0.12
-    : dayResult.percent * 0.48 + monthResult.percent * 0.32 + yearResult.percent * 0.2;
-  const percent = Math.max(0, Math.min(100, Math.round(weighted)));
-  const { tier } = tierFromPercent(percent);
-  const verdictTier = tier === "rat-xau" ? "xau" : tier;
+  if (params.chiRelation.type === "luc-hop" || params.chiRelation.type === "tam-hop") {
+    strengths.push(`Địa Chi ngày sinh hai bên thuộc ${params.chiRelation.label} — ${params.chiRelation.desc}`);
+  } else if (params.chiRelation.type === "luc-xung" || params.chiRelation.type === "luc-hai") {
+    weaknesses.push(`Địa Chi ngày sinh hai bên thuộc ${params.chiRelation.label} — ${params.chiRelation.desc}`);
+  }
+
+  if (params.currentYearRole === "dung" || params.currentYearRole === "hy") {
+    strengths.push(
+      `Năm ${params.currentYearPillar} là năm thuận lợi với chính bản thân đối tác — tinh thần/tài lực của họ đang tốt, dễ đưa ra quyết định đúng đắn.`,
+    );
+  } else if (params.currentYearRole === "ky") {
+    weaknesses.push(
+      `Năm ${params.currentYearPillar} là năm bất lợi với chính bản thân đối tác — họ dễ gặp trở ngại hoặc quyết định vội vàng, nên thận trọng khi hợp tác trong giai đoạn này.`,
+    );
+  }
+
+  if (params.daiVanCurrentRole === "dung" || params.daiVanCurrentRole === "hy") {
+    strengths.push(
+      "Đối tác đang trong giai đoạn Đại Vận (10 năm) thuận lợi — nền tảng vận trình dài hạn đang hỗ trợ họ phát triển, phù hợp để đầu tư/hợp tác dài hạn.",
+    );
+  } else if (params.daiVanCurrentRole === "ky") {
+    weaknesses.push(
+      "Đối tác đang trong giai đoạn Đại Vận (10 năm) bất lợi — vận trình dài hạn đang gặp cản trở, nên cân nhắc kỹ trước khi đầu tư/hợp tác lớn trong giai đoạn này.",
+    );
+  } else if (params.daiVanCurrentRole === null) {
+    weaknesses.push("Đối tác chưa nhập Đại Vận đầu tiên (còn nhỏ tuổi) — vận trình dài hạn chưa rõ ràng, cần thêm thời gian mới đánh giá được.");
+  }
+
+  if (params.compatTier === "rat-tot" || params.compatTier === "tot") {
+    strengths.push(
+      `Tổng thể Tứ Trụ của người này thiên về Dụng/Hỷ Thần đối với bạn — ${params.compatTier === "rat-tot" ? "rất" : "khá"} thuận lợi để hợp tác lâu dài.`,
+    );
+  } else if (params.compatTier === "xau") {
+    weaknesses.push("Tổng thể Tứ Trụ của người này thiên về Kỵ Thần đối với bạn — nên cân nhắc kỹ vai trò hợp tác, tránh phụ thuộc tài chính lớn vào nhau.");
+  }
+
+  if (strengths.length === 0) {
+    strengths.push("Không có yếu tố Ngũ Hành nào nổi bật thuộc Dụng/Hỷ Thần của bạn — mối quan hệ trung tính, không mang lại trợ lực rõ rệt nhưng cũng không quá bất lợi.");
+  }
+  if (weaknesses.length === 0) {
+    weaknesses.push("Không phát hiện yếu tố Ngũ Hành hay Địa Chi bất lợi rõ rệt — tuy nhiên vẫn nên quan sát thêm qua thời gian hợp tác thực tế trước khi đầu tư lớn.");
+  }
+
+  return { strengths, weaknesses };
+}
+
+/** Đánh giá một người khác dựa trên Tứ Trụ do người dùng nhập tay (không suy từ ngày Dương lịch) —
+ * gồm 2 lớp: (1) Ngũ Hành của họ có lợi/hại gì cho CHÍNH lá số chủ trang, và (2) bản thân người đó
+ * năm nay và trong Đại Vận hiện tại (tính từ tuổi khởi vận do người dùng tự nhập) có đang thuận lợi
+ * hay không — kèm tổng kết Ưu điểm/Khuyết điểm khi làm việc/hợp tác với người này. */
+export function evaluatePartnerManual(input: PartnerInput): PartnerEvaluation {
+  const own = analyzeOwnChart(input);
+
+  // Lớp 1: so với Ngũ Hành Dụng/Hỷ/Kỵ của chủ trang (ELEMENT_ROLE cố định của lá số này)
+  const pillarDefs = [
+    { label: "Năm", pair: input.year },
+    { label: "Tháng", pair: input.month },
+    { label: "Ngày", pair: input.day },
+    ...(input.hour ? [{ label: "Giờ", pair: input.hour }] : []),
+  ];
+  const ROLE_SCORE_MAP: Record<DungHyKy, number> = { "dung-than": 2, "hy-than": 1, "hy-than-phu": 0.5, "ky-than": -1.5, "trung-tinh": 0 };
+  let sumScore = 0;
+  const pillars = pillarDefs.map(({ label, pair }) => {
+    const el = canElement(pair.can);
+    const role = ELEMENT_ROLE[el];
+    sumScore += ROLE_SCORE_MAP[role];
+    return { label, pillarLabel: `${pair.can} ${pair.chi}`, element: ELEMENT_LABEL[el], role };
+  });
+  const maxScore = 2 * pillarDefs.length;
+  const minScore = -1.5 * pillarDefs.length;
+  const compatPercent = Math.max(0, Math.min(100, Math.round(((sumScore - minScore) / (maxScore - minScore)) * 100)));
+  const compatTier: PartnerEvaluation["compatTier"] =
+    compatPercent >= 70 ? "rat-tot" : compatPercent >= 50 ? "tot" : compatPercent >= 30 ? "binh-thuong" : "xau";
 
   const ownDayChi = fourPillars.find((p) => p.position === "Ngày")?.chi ?? "";
-  const chiRelation = ownDayChi ? chiRelationship(ownDayChi, dayPillar.chi.name) : { type: "khong-ro-ret" as const, label: "Không rõ", desc: "" };
+  const chiRelation = ownDayChi ? chiRelationship(ownDayChi, input.day.chi) : { type: "khong-ro-ret" as const, label: "Không rõ", desc: "" };
+
+  // Lớp 2: vận trình của chính đối tác — năm nay
+  const currentYear = getBaziYearNumber(new Date());
+  const currentYearPillarObj = getYearPillar(currentYear);
+  const currentYearRole = roleOfElement(currentYearPillarObj.can.element, own);
+
+  // Lớp 2: Đại Vận — thuận/nghịch theo giới tính + âm dương Can Năm, tính từ Trụ Tháng.
+  // Tuổi khởi vận (nhập đại vận) do người dùng tự nhập (startAge) thay vì mặc định từ tuổi 1,
+  // vì mỗi người nhập vận ở độ tuổi khác nhau tuỳ khoảng cách từ lúc sinh tới tiết khí gần nhất.
+  const yearPolarity = CAN.find((c) => c.name === input.year.can)!.polarity;
+  const daiVanThuan = (input.gender === "nam" && yearPolarity === "duong") || (input.gender === "nu" && yearPolarity === "am");
+  const step = daiVanThuan ? 1 : -1;
+  const startAge = Math.max(0, Math.round(input.startAge));
+  const daiVan: DaiVanPeriod[] = Array.from({ length: 8 }, (_, i) => {
+    const p = stepPillar(input.month, step * (i + 1));
+    const rangeStart = startAge + i * 10;
+    const role = roleOfElement(canElement(p.can), own);
+    return { pillar: `${p.can} ${p.chi}`, ageRange: [rangeStart, rangeStart + 9] as [number, number], role };
+  });
+  const age = Math.round(input.currentAge);
+  let currentDaiVanIndex: number;
+  if (age < startAge) {
+    currentDaiVanIndex = -1;
+  } else {
+    const idx = daiVan.findIndex((dv) => age >= dv.ageRange[0] && age <= dv.ageRange[1]);
+    currentDaiVanIndex = idx === -1 ? 7 : idx;
+  }
+  const daiVanCurrentRole = currentDaiVanIndex >= 0 ? daiVan[currentDaiVanIndex].role : null;
+
+  const prosCons = buildProsCons({
+    pillars,
+    chiRelation,
+    currentYearRole,
+    currentYearPillar: currentYearPillarObj.label,
+    daiVanCurrentRole,
+    compatTier,
+  });
 
   return {
-    yearPillar: yearPillar.label,
-    monthPillar: monthPillar.label,
-    dayPillar: dayPillar.label,
-    hourPillar: hourPillar?.label,
+    ownAnalysis: own,
     pillars,
-    percent,
-    tier: verdictTier,
-    tierLabel: VERDICT_LABEL[verdictTier],
+    compatPercent,
+    compatTier,
+    compatTierLabel: COMPAT_TIER_LABEL[compatTier],
+    compatSummary: COMPAT_SUMMARY[compatTier],
     chiRelation,
-    summary: VERDICT_SUMMARY[verdictTier],
+    currentYear,
+    currentYearPillar: currentYearPillarObj.label,
+    currentYearRole,
+    currentYearLabel: PERIOD_LABEL[currentYearRole],
+    startAge,
+    daiVan,
+    currentDaiVanIndex,
+    daiVanThuan,
+    prosCons,
   };
 }
 
-export { ROLE_LABEL };
+export { ROLE_LABEL, PERIOD_LABEL };

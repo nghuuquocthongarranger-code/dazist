@@ -1,6 +1,6 @@
 import * as Astronomy from "astronomy-engine";
 import type { Element, DungHyKy } from "./elements";
-import { ELEMENT_ROLE, ELEMENT_LABEL, ROLE_SCORE, ROLE_LABEL } from "./elements";
+import { ELEMENT_ROLE, ELEMENT_LABEL, ROLE_SCORE, ROLE_LABEL, SINH, KHAC } from "./elements";
 
 function normalizeDeg(deg: number): number {
   return ((deg % 360) + 360) % 360;
@@ -524,3 +524,66 @@ export function chiRelationship(chiA: string, chiB: string): ChiRelationship {
   }
   return { type: "khong-ro-ret", label: "Không hợp/xung rõ rệt", desc: "Không rơi vào tổ hợp Hợp/Xung/Hại kinh điển nào — quan hệ trung tính, tốt/xấu phụ thuộc chủ yếu vào Ngũ Hành Dụng/Hỷ/Kỵ của từng người." };
 }
+
+// ---------------------------------------------------------------------------
+// Nhập Can Chi thủ công (không suy từ ngày Dương lịch) — dùng cho tính năng
+// xem Bát Tự người khác khi người dùng đã biết sẵn Tứ Trụ chính xác.
+// ---------------------------------------------------------------------------
+
+export interface CanChiPair {
+  can: string;
+  chi: string;
+}
+
+/** 60 tổ hợp Giáp Tý hợp lệ theo đúng chu kỳ Lục Thập Hoa Giáp (Can index % 10 == Chi index % 12,
+ * cùng chẵn/lẻ) — dùng để tạo danh sách lựa chọn Can Chi cho người dùng, tránh chọn được tổ hợp sai. */
+export const SIXTY_CYCLE: { can: string; chi: string; label: string; canIndex: number; chiIndex: number }[] = Array.from(
+  { length: 60 },
+  (_, i) => {
+    const canIndex = i % 10;
+    const chiIndex = i % 12;
+    return { can: CAN[canIndex].name, chi: CHI[chiIndex].name, label: `${CAN[canIndex].name} ${CHI[chiIndex].name}`, canIndex, chiIndex };
+  },
+);
+
+function findCanIndex(name: string): number {
+  const i = CAN.findIndex((c) => c.name === name);
+  if (i === -1) throw new Error(`Can không hợp lệ: ${name}`);
+  return i;
+}
+
+function findChiIndex(name: string): number {
+  const i = CHI.findIndex((c) => c.name === name);
+  if (i === -1) throw new Error(`Chi không hợp lệ: ${name}`);
+  return i;
+}
+
+/** Bước tới (steps > 0, thuận) hoặc lùi (steps < 0, nghịch) N vị trí trong chu kỳ 60 Giáp Tý từ một cặp Can Chi. */
+export function stepPillar(pair: CanChiPair, steps: number): CanChiPair {
+  const canIndex = (((findCanIndex(pair.can) + steps) % 10) + 10) % 10;
+  const chiIndex = (((findChiIndex(pair.chi) + steps) % 12) + 12) % 12;
+  return { can: CAN[canIndex].name, chi: CHI[chiIndex].name };
+}
+
+export type TenGodType = "Tỷ Kiên" | "Kiếp Tài" | "Thực Thần" | "Thương Quan" | "Chính Tài" | "Thiên Tài" | "Chính Quan" | "Thất Sát" | "Chính Ấn" | "Thiên Ấn";
+
+/** Thập Thần tổng quát của một Can bất kỳ so với Nhật Chủ bất kỳ (không cố định theo 1 lá số như
+ * TEN_GOD_BY_CAN_INDEX_FOR_MAU) — dùng để tự luận Bát Tự cho một người bất kỳ mà người dùng nhập tay. */
+export function tenGodOf(nhatChuCan: string, otherCan: string): TenGodType {
+  const nc = CAN[findCanIndex(nhatChuCan)];
+  const other = CAN[findCanIndex(otherCan)];
+  const samePolarity = nc.polarity === other.polarity;
+  if (other.element === nc.element) return samePolarity ? "Tỷ Kiên" : "Kiếp Tài";
+  if (SINH[other.element] === nc.element) return samePolarity ? "Thiên Ấn" : "Chính Ấn";
+  if (SINH[nc.element] === other.element) return samePolarity ? "Thực Thần" : "Thương Quan";
+  if (KHAC[nc.element] === other.element) return samePolarity ? "Thiên Tài" : "Chính Tài";
+  return samePolarity ? "Thất Sát" : "Chính Quan"; // KHAC[other.element] === nc.element
+}
+
+export const TEN_GOD_GROUP: Record<TenGodType, "ty-kiep" | "an" | "thuc-thuong" | "tai" | "quan-sat"> = {
+  "Tỷ Kiên": "ty-kiep", "Kiếp Tài": "ty-kiep",
+  "Chính Ấn": "an", "Thiên Ấn": "an",
+  "Thực Thần": "thuc-thuong", "Thương Quan": "thuc-thuong",
+  "Chính Tài": "tai", "Thiên Tài": "tai",
+  "Chính Quan": "quan-sat", "Thất Sát": "quan-sat",
+};
