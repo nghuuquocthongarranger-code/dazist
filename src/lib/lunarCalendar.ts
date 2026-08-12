@@ -4,6 +4,8 @@
  * cao cho các năm hiện đại (khoảng 1800–2100).
  */
 
+import * as Astronomy from "astronomy-engine";
+
 const TIME_ZONE = 7;
 
 function jdFromDate(dd: number, mm: number, yy: number): number {
@@ -178,6 +180,39 @@ export function lunarYearCanChi(lunarYear: number): string {
   const canIndex = (((lunarYear - 4) % 10) + 10) % 10;
   const chiIndex = (((lunarYear - 4) % 12) + 12) % 12;
   return `${CAN_NAMES[canIndex]} ${CHI_NAMES[chiIndex]}`;
+}
+
+export interface MoonPhaseInfo {
+  /** Góc pha 0–360° (0 = Sóc/Không trăng, 90 = Thượng huyền, 180 = Rằm/Trăng tròn, 270 = Hạ huyền). */
+  phaseAngle: number;
+  /** Tỉ lệ bề mặt được chiếu sáng nhìn từ Trái Đất, 0–1. */
+  illumination: number;
+  /** Tên pha tiếng Việt tương ứng với góc pha hiện tại. */
+  phaseName: string;
+}
+
+const PHASE_NAME_BANDS: { max: number; name: string }[] = [
+  { max: 6, name: "Không trăng (Sóc)" },
+  { max: 84, name: "Trăng lưỡi liềm đầu tháng" },
+  { max: 96, name: "Trăng bán nguyệt đầu tháng (Thượng huyền)" },
+  { max: 174, name: "Trăng khuyết đầu tháng" },
+  { max: 186, name: "Trăng tròn (Rằm)" },
+  { max: 264, name: "Trăng khuyết cuối tháng" },
+  { max: 276, name: "Trăng bán nguyệt cuối tháng (Hạ huyền)" },
+  { max: 354, name: "Trăng lưỡi liềm cuối tháng" },
+  { max: 360, name: "Không trăng (Sóc)" },
+];
+
+function phaseNameOf(angle: number): string {
+  const band = PHASE_NAME_BANDS.find((b) => angle <= b.max);
+  return band ? band.name : PHASE_NAME_BANDS[PHASE_NAME_BANDS.length - 1].name;
+}
+
+/** Pha Mặt Trăng thật tại một thời điểm — dùng để đồng bộ hình ảnh 3D và mô tả độ che phủ với Âm lịch. */
+export function moonPhaseInfo(date: Date): MoonPhaseInfo {
+  const phaseAngle = Astronomy.MoonPhase(date);
+  const illumination = Astronomy.Illumination(Astronomy.Body.Moon, date).phase_fraction;
+  return { phaseAngle, illumination, phaseName: phaseNameOf(phaseAngle) };
 }
 
 export { jdFromDate, jdToDate };

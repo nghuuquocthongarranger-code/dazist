@@ -4,10 +4,11 @@ import { tierFromPercent, getHiddenStems, type HiddenStemDetail } from "../../li
 import { formatDegInSign, type WesternAstroResult } from "../../lib/westernAstro";
 import { computeDayScoreBundle, type ColumnScore, type DayScoreBundle } from "../../lib/dayScore";
 import { getLuuNhatPalace, getLuuNguyetPalace, getLuuNienPalace } from "../../lib/tuViScore";
-import { solarDateToLunar, lunarYearCanChi } from "../../lib/lunarCalendar";
+import { solarDateToLunar, lunarYearCanChi, moonPhaseInfo } from "../../lib/lunarCalendar";
 import { TRUONG_SINH_TONE, type TuViPalace } from "../../data/tuViProfile";
 import { CanBadge, ChiBadge } from "../CanChiBadge";
 import { SectionHeading } from "../GlassCard";
+import { MoonPhaseDisc } from "../MoonPhaseDisc";
 import { ReadingModal } from "../ReadingModal";
 import { ChatPanel } from "../ChatPanel";
 import { ROLE_LABEL } from "../../lib/elements";
@@ -431,6 +432,12 @@ export function DayLookup() {
     return solarDateToLunar(new Date(y, m - 1, d));
   }, [dateStr]);
 
+  const moonPhase = useMemo(() => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return null;
+    return moonPhaseInfo(new Date(y, m - 1, d, 12));
+  }, [dateStr]);
+
   const today = toISODate(new Date());
   const overallTier = bundle ? tierFromPercent(bundle.day.combined) : null;
   const overallStyle = overallTier ? TIER_STYLE[overallTier.tier] : TIER_STYLE["binh-thuong"];
@@ -490,11 +497,18 @@ export function DayLookup() {
             </button>
           </div>
 
-          {lunar && (
-            <p className="mt-2.5 text-xs text-gold-soft/80 text-center sm:text-left">
-              Âm lịch: {lunar.leap ? "Nhuận " : ""}
-              {lunar.day}/{lunar.month} năm {lunarYearCanChi(lunar.year)}
-            </p>
+          {lunar && moonPhase && (
+            <div className="mt-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 rounded-2xl bg-black/20 border border-white/5 p-4">
+              <MoonPhaseDisc illuminatedFraction={moonPhase.illumination} waxing={moonPhase.phaseAngle < 180} size={104} />
+              <div className="text-center sm:text-left">
+                <p className="text-sm text-gold-soft font-medium">
+                  Âm lịch: {lunar.leap ? "Nhuận " : ""}
+                  {lunar.day}/{lunar.month} năm {lunarYearCanChi(lunar.year)}
+                </p>
+                <p className="text-xs text-white/60 mt-1">{moonPhase.phaseName}</p>
+                <p className="text-xs text-white/40 mt-0.5">Độ che phủ: {Math.round(moonPhase.illumination * 100)}%</p>
+              </div>
+            </div>
           )}
 
           <AnimatePresence mode="wait">
