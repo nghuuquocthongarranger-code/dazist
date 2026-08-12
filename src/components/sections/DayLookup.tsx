@@ -4,6 +4,7 @@ import { tierFromPercent, getHiddenStems, type HiddenStemDetail } from "../../li
 import { formatDegInSign, type WesternAstroResult } from "../../lib/westernAstro";
 import { computeDayScoreBundle, type ColumnScore, type DayScoreBundle } from "../../lib/dayScore";
 import { getLuuNhatPalace, getLuuNguyetPalace, getLuuNienPalace } from "../../lib/tuViScore";
+import { solarDateToLunar, lunarYearCanChi } from "../../lib/lunarCalendar";
 import { TRUONG_SINH_TONE, type TuViPalace } from "../../data/tuViProfile";
 import { CanBadge, ChiBadge } from "../CanChiBadge";
 import { SectionHeading } from "../GlassCard";
@@ -424,6 +425,12 @@ export function DayLookup() {
     return computeDayScoreBundle(new Date(y, m - 1, d));
   }, [dateStr]);
 
+  const lunar = useMemo(() => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return null;
+    return solarDateToLunar(new Date(y, m - 1, d));
+  }, [dateStr]);
+
   const today = toISODate(new Date());
   const overallTier = bundle ? tierFromPercent(bundle.day.combined) : null;
   const overallStyle = overallTier ? TIER_STYLE[overallTier.tier] : TIER_STYLE["binh-thuong"];
@@ -482,6 +489,13 @@ export function DayLookup() {
               Hôm nay
             </button>
           </div>
+
+          {lunar && (
+            <p className="mt-2.5 text-xs text-gold-soft/80 text-center sm:text-left">
+              Âm lịch: {lunar.leap ? "Nhuận " : ""}
+              {lunar.day}/{lunar.month} năm {lunarYearCanChi(lunar.year)}
+            </p>
+          )}
 
           <AnimatePresence mode="wait">
             {bundle && overallTier && (

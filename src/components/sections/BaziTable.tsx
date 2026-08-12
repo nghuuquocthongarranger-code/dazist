@@ -23,6 +23,7 @@ import {
 } from "../../data/baziProfile";
 import { CAN, CHI } from "../../lib/canChi";
 import { ELEMENT_COLOR, type Element } from "../../lib/elements";
+import { truongSinhOf, TRUONG_SINH_TONE, TRUONG_SINH_DESC } from "../../lib/truongSinh";
 
 const CAN_ELEMENT: Record<string, Element> = Object.fromEntries(CAN.map((c) => [c.name, c.element]));
 const CHI_ELEMENT: Record<string, Element> = Object.fromEntries(CHI.map((c) => [c.name, c.element]));
@@ -145,9 +146,16 @@ function PersonalSection() {
 }
 
 /* ──────── Bảng Tứ Trụ ──────── */
+const TRUONG_SINH_TONE_CLASS: Record<string, string> = {
+  tot: "text-green-400",
+  xau: "text-red-400",
+  "trung-tinh": "text-yellow-400",
+};
+
 function PillarsTable() {
   const [selectedSao, setSelectedSao] = useState<string | null>(null);
   const saoData = selectedSao ? thanSatMeanings.find((s) => s.name === selectedSao) : null;
+  const [selectedTruongSinh, setSelectedTruongSinh] = useState<string | null>(null);
 
   return (
     <>
@@ -227,6 +235,23 @@ function PillarsTable() {
                   </td>
                 ))}
               </tr>
+              <tr className="border-b border-white/5">
+                <td className="py-2 text-gold-soft font-semibold align-top">Trường Sinh</td>
+                {fourPillars.map((p) => {
+                  const cung = truongSinhOf(nhatChu.can, p.chi);
+                  const tone = TRUONG_SINH_TONE[cung];
+                  return (
+                    <td key={p.position} className="text-center py-2">
+                      <button
+                        onClick={() => setSelectedTruongSinh(cung)}
+                        className={`text-[10px] sm:text-xs leading-relaxed hover:underline ${TRUONG_SINH_TONE_CLASS[tone]}`}
+                      >
+                        {cung}
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
               <tr>
                 <td className="py-2 text-gold-soft font-semibold align-top">Thần Sát</td>
                 {fourPillars.map((p) => {
@@ -249,6 +274,9 @@ function PillarsTable() {
             </tbody>
           </table>
         </div>
+        <p className="text-white/40 text-[11px] mt-3 leading-relaxed">
+          12 Cung Trường Sinh tính theo Nhật Chủ ({nhatChu.can}) so với Địa Chi từng trụ — mô tả trạng thái vượng suy của khí Nhật Chủ tại mỗi giai đoạn (Năm/Tháng/Ngày/Giờ) trong đời.
+        </p>
       </Section>
       <Modal open={!!selectedSao} onClose={() => setSelectedSao(null)} title={`Thần Sát: ${selectedSao}`}>
         {saoData ? (
@@ -264,6 +292,23 @@ function PillarsTable() {
         ) : (
           <p className="text-white/50 text-sm">Thần Sát này chưa có dữ liệu chi tiết.</p>
         )}
+      </Modal>
+      <Modal open={!!selectedTruongSinh} onClose={() => setSelectedTruongSinh(null)} title={`Trường Sinh: ${selectedTruongSinh}`}>
+        {selectedTruongSinh ? (
+          <div className="space-y-3 text-sm text-white/80">
+            <p>
+              <span className="text-gold-soft font-semibold">Tính chất:</span>{" "}
+              <span className={TRUONG_SINH_TONE_CLASS[TRUONG_SINH_TONE[selectedTruongSinh as keyof typeof TRUONG_SINH_TONE]]}>
+                {TRUONG_SINH_TONE[selectedTruongSinh as keyof typeof TRUONG_SINH_TONE] === "tot"
+                  ? "Cát"
+                  : TRUONG_SINH_TONE[selectedTruongSinh as keyof typeof TRUONG_SINH_TONE] === "xau"
+                    ? "Hung"
+                    : "Trung tính"}
+              </span>
+            </p>
+            <p><span className="text-gold-soft font-semibold">Ý nghĩa:</span> {TRUONG_SINH_DESC[selectedTruongSinh as keyof typeof TRUONG_SINH_DESC]}</p>
+          </div>
+        ) : null}
       </Modal>
     </>
   );
